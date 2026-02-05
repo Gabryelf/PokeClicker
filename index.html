@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <title>Pokemon Clicker Game</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome подключен неправильно -->
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1><i class="fas fa-dragon"></i> Pokemon Clicker Adventure</h1>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <i class="fas fa-coins"></i>
+                    <span class="stat-label">Счет:</span>
+                    <span class="stat-value" id="current-score">0</span>
+                </div>
+                
+                <div class="stat-box">
+                    <i class="fas fa-arrow-alt-circle-up"></i>
+                    <span class="stat-label">Следующий уровень через:</span>
+                    <span class="stat-value" id="next-level">100</span>
+                    <span> очков</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="game-main">
+            <section class="pokemon-display">
+                <div class="image-frame">
+                    <!-- Неправильный путь к изображению -->
+                    <img src="./pokemons/first.png" alt="Покемон" class="pokemon-image" id="main-pokemon">
+                </div>
+                <div class="pokemon-info">
+                    <h3 id="pokemon-name">Загрузка...</h3>
+                    <p id="pokemon-description">Кликай чтобы открыть!</p>
+                </div>
+            </section>
+
+            <section class="controls">
+                <div class="clicker-area">
+                    <!-- Кнопка без стилей -->
+                    <button class="click-button" id="click-btn">
+                        Нажми меня!
+                    </button>
+                    <p class="click-hint">
+                        <i class="fas fa-mouse-pointer"></i>
+                        Кликай или нажимай ПРОБЕЛ
+                    </p>
+                </div>
+
+                <div class="progress-section">
+                    <h4>Прогресс до следующего покемона:</h4>
+                    <!-- Прогресс-бар сломан -->
+                    <div class="progress-container">
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <span class="progress-text" id="progress-percent">0%</span>
+                    </div>
+                    <p class="progress-info" id="progress-info">
+                        0 из 100 очков
+                    </p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="game-footer">
+            <!-- Пустой футер -->
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
