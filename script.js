@@ -33,6 +33,7 @@ const progressInfo = document.getElementById('progress-info');
 function initializeGame() {
     console.log("Игра инициализируется...");
     updateDisplay();
+    createSoundControls();
 }
 
 // Функция обработки клика
@@ -92,6 +93,26 @@ function changePokemon() {
             pokemonNameElement.innerText = pokemonNames[imageIndex] || "Неизвестный";
         }
     }
+}
+
+// Эта функция проверяет доступность звукового генератора
+function initSoundSystem() {
+    // Проверяем, что GameSoundGenerator загружен
+    if (typeof GameSoundGenerator === 'undefined') {
+        console.warn('⚠️ Sound generator not loaded! Check script order in HTML');
+        return false;
+    }
+    
+    // Инициализируем звуковую систему
+    GameSoundGenerator.init();
+    
+    // Активируем после первого клика пользователя
+    document.addEventListener('click', function activateSound() {
+        GameSoundGenerator.activate();
+        document.removeEventListener('click', activateSound);
+    }, { once: true });
+    
+    return true;
 }
 
 // Функция создания эффекта клика
