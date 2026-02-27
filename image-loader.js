@@ -221,6 +221,7 @@ function drawPokeballFallback(ctx, type, x, y, width, height) {
     ctx.fillText(type[0], x + width/2, y + height/2);
 }
 
+// Обновленная функция для отображения покеболов
 async function updatePokeballImages(imageManager) {
     const pokeballItems = document.querySelectorAll('.pokeball-item');
     
@@ -232,8 +233,18 @@ async function updatePokeballImages(imageManager) {
         try {
             const pokeballImg = await imageManager.getPokeballImage(type);
             img.src = pokeballImg.src;
+            
+            // Применяем стили для изображения
+            img.style.width = '32px';
+            img.style.height = '32px';
+            img.style.objectFit = 'contain';
+            
         } catch (e) {
             console.error(`❌ Ошибка обновления покебола ${type}:`, e);
+            // Запасной вариант
+            img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
+            img.style.width = '32px';
+            img.style.height = '32px';
         }
     }
 }

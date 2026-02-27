@@ -1,5 +1,5 @@
 // ==============================
-// СИСТЕМА БОЯ С АНИМАЦИЯМИ И АВТО-АТАКОЙ
+// ОБНОВЛЕННАЯ СИСТЕМА БОЯ
 // ==============================
 
 class BattleSystem {
@@ -13,32 +13,56 @@ class BattleSystem {
         this.enemyAnimationFrame = null;
         this.isInitialized = false;
         
-        // Создаем врага только один раз
+        // Создаем врага
         this.createNewEnemy();
         this.startEnemyAnimation();
         this.startAutoAttack();
         this.isInitialized = true;
     }
     
+    // Получить уровень игрока (максимальный уровень покемона в команде)
+    getPlayerLevel() {
+        if (this.pokemonManager.team.length === 0) {
+            return 1;
+        }
+        return Math.max(...this.pokemonManager.team.map(p => p.level));
+    }
+    
+    // Получить максимально возможный уровень врага
+    getMaxEnemyLevel() {
+        const playerLevel = this.getPlayerLevel();
+        return playerLevel * GAME_CONFIG.MAX_ENEMY_LEVEL_MULTIPLIER;
+    }
+    
     createNewEnemy() {
-        const enemies = GAME_CONFIG.ENEMY_DATA;
-        const randomEnemy = { ...enemies[Math.floor(Math.random() * enemies.length)] };
+        // Получаем текущую локацию
+        const currentLocation = this.game.locationSystem?.currentLocation || 'pallet_town';
         
+        // Получаем список возможных врагов для локации
+        const locationEnemies = GAME_CONFIG.ENEMY_DATA[currentLocation] || GAME_CONFIG.ENEMY_DATA['pallet_town'];
+        
+        // Выбираем случайного врага из локации
+        const enemyTemplate = locationEnemies[Math.floor(Math.random() * locationEnemies.length)];
+        
+        // Определяем уровень врага (случайный от 1 до максимального)
+        const maxLevel = this.getMaxEnemyLevel();
+        const enemyLevel = Math.floor(Math.random() * maxLevel) + 1;
+        
+        // Рассчитываем HP
         const baseHp = GAME_CONFIG.BASE_ENEMY_HP;
         const hpMultiplier = GAME_CONFIG.ENEMY_HP_MULTIPLIER;
-        
-        const maxHp = Math.floor(baseHp * Math.pow(hpMultiplier, this.enemyLevel - 1));
+        const maxHp = Math.floor(baseHp * Math.pow(hpMultiplier, enemyLevel - 1));
         
         this.currentEnemy = {
-            ...randomEnemy,
+            ...enemyTemplate,
             id: Date.now() + Math.random(),
             hp: maxHp,
             maxHp: maxHp,
-            level: this.enemyLevel,
-            imageKey: randomEnemy.imageKey
+            level: enemyLevel,
+            imageKey: enemyTemplate.imageKey
         };
         
-        // Обновляем UI только если игра инициализирована
+        // Обновляем UI
         if (this.isInitialized) {
             this.updateUI();
         }
@@ -65,7 +89,6 @@ class BattleSystem {
         }
         
         this.autoAttackInterval = setInterval(() => {
-            // Авто-атака срабатывает только если команда полностью заполнена (3 покемона)
             if (this.pokemonManager && this.pokemonManager.team.length === this.pokemonManager.maxTeamSize) {
                 this.performAutoAttack();
             }
@@ -150,13 +173,19 @@ class BattleSystem {
     }
     
     handleVictory(result = {}) {
-        const reward = Math.floor(this.enemyLevel * GAME_CONFIG.REWARD_MULTIPLIER);
+        const reward = Math.floor(this.currentEnemy.level * GAME_CONFIG.REWARD_MULTIPLIER);
         
         result.defeated = true;
         result.reward = reward;
         result.enemy = { ...this.currentEnemy };
         
-        this.enemyLevel++;
+        // Увеличиваем счетчик побед в локации
+        if (this.game.locationSystem) {
+            this.game.locationSystem.updateQuestProgress('defeat_enemies', 1);
+            this.game.locationSystem.updateQuestProgress('collect_money', reward);
+        }
+        
+        // Создаем нового врага
         this.createNewEnemy();
         
         return result;
@@ -169,32 +198,34 @@ class BattleSystem {
         const enemyLevel = document.getElementById('enemy-level');
         const enemyHpBar = document.getElementById('enemy-hp-bar');
         const enemyHpText = document.getElementById('enemy-hp-text');
-        const enemyRarity = document.getElementById('enemy-rarity');
-        const enemyTypeIcons = document.getElementById('enemy-type-icons');
         const enemyRarityIcon = document.getElementById('enemy-rarity-icon');
+        const enemyRarityTooltip = document.getElementById('enemy-rarity-tooltip');
+        const enemyTypeIcons = document.getElementById('enemy-type-icons');
         const enemyImage = document.getElementById('enemy-image');
         
         if (enemyName) enemyName.textContent = this.currentEnemy.name;
         if (enemyLevel) enemyLevel.textContent = this.currentEnemy.level;
         
-        if (enemyRarity) {
-            const rarity = GAME_CONFIG.RARITIES[this.currentEnemy.rarity];
-            enemyRarity.textContent = rarity.name;
-            enemyRarity.style.color = rarity.color;
-            enemyRarity.style.borderColor = rarity.color;
-        }
-        
+        // Обновляем иконку редкости и тултип
         if (enemyRarityIcon) {
             const rarity = GAME_CONFIG.RARITIES[this.currentEnemy.rarity];
             enemyRarityIcon.style.borderColor = rarity.color;
             enemyRarityIcon.style.color = rarity.color;
             enemyRarityIcon.textContent = this.getRarityIcon(this.currentEnemy.rarity);
+            
+            if (enemyRarityTooltip) {
+                enemyRarityTooltip.textContent = rarity.name;
+                enemyRarityTooltip.style.borderColor = rarity.color;
+                enemyRarityTooltip.style.color = rarity.color;
+            }
         }
         
+        // Обновляем иконки типов
         if (enemyTypeIcons) {
             enemyTypeIcons.innerHTML = this.getTypeIcons(this.currentEnemy.types);
         }
         
+        // Обновляем HP
         if (enemyHpBar) {
             const hpPercent = (this.currentEnemy.hp / this.currentEnemy.maxHp) * 100;
             enemyHpBar.style.width = `${hpPercent}%`;
@@ -204,6 +235,7 @@ class BattleSystem {
             enemyHpText.textContent = `${Math.floor(this.currentEnemy.hp)}/${this.currentEnemy.maxHp}`;
         }
         
+        // Обновляем изображение
         if (enemyImage && this.imageManager) {
             try {
                 const enemyImg = await this.imageManager.getEnemyImage(this.currentEnemy.imageKey);
@@ -263,28 +295,5 @@ class BattleSystem {
         }
     }
 }
-
-// Добавляем CSS анимацию для урона
-const battleStyles = document.createElement('style');
-battleStyles.textContent = `
-    @keyframes enemyDamage {
-        0% { filter: brightness(1); }
-        30% { filter: brightness(1.5) drop-shadow(0 0 20px #ef4444); }
-        100% { filter: brightness(1); }
-    }
-    
-    .enemy-damage-effect {
-        animation: enemyDamage 0.3s ease-out;
-    }
-    
-    .enemy-card {
-        transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-    
-    .enemy-card:active {
-        transform: scale(0.98);
-    }
-`;
-document.head.appendChild(battleStyles);
 
 window.BattleSystem = BattleSystem;

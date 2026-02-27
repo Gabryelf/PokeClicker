@@ -171,12 +171,12 @@
         gap: 12px;
         flex-shrink: 0;
     }
-
+    
     .pokeball-item {
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 8px 16px;
+        padding: 6px 12px;
         background: rgba(255, 255, 255, 0.02);
         border-radius: 100px;
         border: 1px solid rgba(255, 255, 255, 0.03);
@@ -185,87 +185,96 @@
         position: relative;
         pointer-events: auto;
         white-space: nowrap;
+        height: 44px; /* Фиксированная высота */
     }
-
-    /* Адаптивность для разных экранов */
-    @media (max-width: 1200px) {
-        header {
-            padding: 0 16px;
-            height: auto;
-            min-height: 80px;
-            padding: 8px 16px;
-        }
-        
-        .stats-bar {
-            gap: 8px;
-        }
-        
-        .money-display, .level-display {
-            padding: 8px 12px;
-            gap: 6px;
-            font-size: 0.9rem;
-        }
-        
-        #money, #player-level {
-            font-size: 1.1rem;
-        }
+    
+    .pokeball-item img {
+        width: 32px !important;
+        height: 32px !important;
+        object-fit: contain;
+        display: block;
     }
-
-    @media (max-width: 1024px) {
-        .nav-buttons {
-            position: static;
-            transform: none;
-            margin: 0;
-            flex: 1;
-            justify-content: center;
-        }
-        
-        .nav-btn span {
-            display: none;
-        }
-        
-        .nav-btn {
-            padding: 8px 12px;
-        }
-        
-        .nav-btn i {
-            font-size: 1.2rem;
-        }
+    
+    .pokeball-item span {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1;
     }
-
+    
+    /* Пустые слоты команды - теперь кликабельны */
+    .team-slot.empty {
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px dashed rgba(255, 255, 255, 0.05);
+        cursor: pointer !important;
+        transition: all 0.2s ease;
+    }
+    
+    .team-slot.empty:hover {
+        background: rgba(108, 92, 231, 0.1);
+        border-color: var(--accent-primary);
+        transform: translateY(-2px);
+    }
+    
+    .team-slot.empty:active {
+        transform: translateY(0);
+    }
+    
+    .team-slot.empty i {
+        font-size: 1.5rem;
+        color: var(--text-muted);
+        opacity: 0.5;
+        transition: opacity 0.2s ease;
+    }
+    
+    .team-slot.empty:hover i {
+        opacity: 1;
+        color: var(--accent-primary);
+    }
+    
+    .team-slot.empty span {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        opacity: 0.5;
+        transition: opacity 0.2s ease;
+    }
+    
+    .team-slot.empty:hover span {
+        opacity: 1;
+        color: var(--accent-primary);
+    }
+    
+    /* Для разных экранов */
     @media (max-width: 768px) {
-        header {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .stats-bar {
-            order: 1;
-            width: auto;
-        }
-        
-        .nav-buttons {
-            order: 3;
-            width: 100%;
-            justify-content: center;
-            margin-top: 4px;
-        }
-        
-        .nav-btn {
-            padding: 6px 10px;
-        }
-        
-        .pokeballs-display {
-            order: 2;
-            gap: 8px;
-        }
-        
         .pokeball-item {
-            padding: 6px 10px;
+            padding: 4px 8px;
+            height: 38px;
+        }
+        
+        .pokeball-item img {
+            width: 26px !important;
+            height: 26px !important;
         }
         
         .pokeball-item span {
             font-size: 0.9rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .pokeball-item {
+            padding: 3px 6px;
+            height: 34px;
+            gap: 4px;
+        }
+        
+        .pokeball-item img {
+            width: 22px !important;
+            height: 22px !important;
+        }
+        
+        .pokeball-item span {
+            font-size: 0.8rem;
         }
     }
 
@@ -355,185 +364,439 @@
        overflow: hidden;
    }
    
-   /* КАРТОЧКА ВРАГА */
+/* ==============================
+   ОБНОВЛЕННАЯ КАРТОЧКА ВРАГА - НОВАЯ КОМПОНОВКА
+   ============================== */
+
    .enemy-card {
-       flex: 3;
-       background: linear-gradient(135deg, rgba(26, 31, 44, 0.8), rgba(18, 22, 32, 0.9));
-       border-radius: var(--border-radius-md);
-       border: 1px solid rgba(255, 255, 255, 0.03);
-       padding: 24px;
-       display: flex;
-       flex-direction: column;
-       position: relative;
-       overflow: hidden;
-       box-shadow: var(--shadow-xl);
-       transition: all 0.3s ease;
-       cursor: pointer;
-   }
-   
-   .enemy-card:hover {
-       transform: scale(1.02);
-       border-color: var(--accent-primary);
-   }
-   
-   .enemy-card::before {
-       content: '';
-       position: absolute;
-       top: 0;
-       left: 0;
-       right: 0;
-       bottom: 0;
-       border-radius: var(--border-radius-md);
-       padding: 2px;
-       background: linear-gradient(135deg, var(--accent-tertiary), var(--accent-secondary));
-       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-       -webkit-mask-composite: xor;
-       mask-composite: exclude;
-       pointer-events: none;
-       opacity: 0.3;
-       transition: opacity 0.3s ease;
-   }
-   
-   .enemy-card:hover::before {
-       opacity: 0.6;
-   }
-   
-   .enemy-header {
-       display: flex;
-       justify-content: space-between;
-       align-items: center;
-       margin-bottom: 16px;
-       position: relative;
-       z-index: 2;
-   }
-   
-   .enemy-name {
-       font-size: 2.2rem;
-       font-weight: 700;
-       letter-spacing: -0.5px;
-       background: linear-gradient(135deg, #fff, var(--text-secondary));
-       -webkit-background-clip: text;
-       -webkit-text-fill-color: transparent;
-   }
-   
-   .enemy-level {
-       padding: 6px 16px;
-       background: rgba(255, 107, 107, 0.1);
-       border: 1px solid rgba(255, 107, 107, 0.3);
-       border-radius: 100px;
-       font-weight: 600;
-       font-size: 1rem;
-       color: var(--accent-tertiary);
-   }
-   
-   .enemy-hp {
-       margin-bottom: 20px;
-       position: relative;
-       z-index: 2;
-   }
-   
-   .hp-bar {
-       height: 8px;
-       background: rgba(255, 255, 255, 0.05);
-       border-radius: 100px;
-       overflow: hidden;
-       margin-bottom: 8px;
-   }
-   
-   .hp-fill {
-       height: 100%;
-       background: linear-gradient(90deg, var(--accent-success), #00D9B0);
-       width: 100%;
-       transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-       border-radius: 100px;
-   }
-   
-   .hp-text {
-       text-align: right;
-       font-weight: 500;
-       font-size: 0.9rem;
-       color: var(--text-muted);
-   }
-   
-   .enemy-image-container {
-       flex: 1;
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       position: relative;
-       min-height: 0;
-   }
-   
-   .rarity-badge {
-       position: absolute;
-       top: 20px;
-       left: 20px;
-       padding: 8px 20px;
-       background: rgba(0, 0, 0, 0.5);
-       border-radius: 100px;
-       font-weight: 600;
-       font-size: 1rem;
-       letter-spacing: 0.5px;
-       border: 1px solid rgba(255, 255, 255, 0.1);
-       backdrop-filter: blur(10px);
-       z-index: 3;
-       color: var(--text-secondary);
-   }
-   
-   .enemy-image {
-       max-width: 100%;
-       max-height: 100%;
-       width: auto;
-       height: auto;
-       object-fit: contain;
-       filter: drop-shadow(0 0 30px rgba(255, 107, 107, 0.3));
-       animation: enemyFloat 4s ease-in-out infinite;
-   }
-   
-   @keyframes enemyFloat {
-       0%, 100% { transform: translateY(0) scale(1); }
-       50% { transform: translateY(-8px) scale(1.02); }
-   }
-   
-   /* Типы и редкость */
-   .type-icons {
-       display: flex;
-       gap: 8px;
-       position: absolute;
-       bottom: 20px;
-       right: 20px;
-       z-index: 3;
-   }
-   
-   .type-icon {
-       width: 32px;
-       height: 32px;
-       border-radius: 50%;
-       background: rgba(0, 0, 0, 0.5);
-       backdrop-filter: blur(10px);
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       border: 1px solid rgba(255, 255, 255, 0.1);
-       color: white;
-       font-size: 1rem;
-       font-weight: 600;
-   }
-   
-   .rarity-icon {
-       position: absolute;
-       bottom: 20px;
-       left: 20px;
-       width: 40px;
-       height: 40px;
-       border-radius: 50%;
-       backdrop-filter: blur(10px);
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       border: 2px solid;
-       font-size: 1.2rem;
-   }
+    flex: 3;
+    background: linear-gradient(135deg, rgba(26, 31, 44, 0.8), rgba(18, 22, 32, 0.9));
+    border-radius: var(--border-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    transition: border-color 0.3s ease, opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.enemy-card:hover {
+    border-color: var(--accent-primary);
+}
+
+.enemy-card:hover::before {
+    opacity: 0.6;
+}
+
+.enemy-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: var(--border-radius-md);
+    padding: 2px;
+    background: linear-gradient(135deg, var(--accent-tertiary), var(--accent-secondary));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
+}
+
+/* Затемнение фона для лучшей читаемости текста */
+.enemy-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Верхняя часть с названием и уровнем */
+.enemy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 10;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+    padding: 10px;
+    border-radius: var(--border-radius-sm);
+    backdrop-filter: blur(5px);
+    width: 100%;
+}
+
+.enemy-name {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #fff, var(--text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    flex: 1;
+    margin-right: 16px;
+    padding-left: 30px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Уровень врага - слева вверху */
+.enemy-level {
+    padding: 8px 20px;
+    background: rgba(255, 107, 107, 0.2);
+    border: 1px solid var(--accent-tertiary);
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--accent-tertiary);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+    z-index: 15;
+    flex-shrink: 0;
+}
+
+/* Кнопка квеста - справа вверху */
+.quest-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--accent-warning);
+    border-radius: 100px;
+    color: var(--accent-warning);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.quest-button:hover {
+    background: var(--accent-warning);
+    color: var(--bg-primary);
+    transform: scale(1.05);
+}
+
+.quest-button i {
+    font-size: 1rem;
+}
+
+.quest-button span {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Изображение врага - на заднем плане */
+.enemy-image-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.enemy-image {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 40px rgba(255, 107, 107, 0.5));
+    animation: enemyFloat 4s ease-in-out infinite;
+    transition: transform 0.3s ease;
+}
+
+.enemy-card:hover .enemy-image {
+    transform: scale(1.1);
+}
+
+
+/* HP bar в центре внизу */
+/* Нижняя часть с HP bar и иконками */
+.enemy-bottom {
+    position: absolute;
+    bottom: 0px;
+    left: 20px;
+    right: 20px;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* HP bar в центре внизу */
+.enemy-hp {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 12px 16px;
+    border-radius: var(--border-radius-sm);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex; /* Добавляем flex */
+    align-items: center; /* Выравниваем по центру */
+    gap: 12px; /* Отступ между полоской и текстом */
+}
+
+.hp-bar {
+    flex: 1; /* Полоска занимает все доступное место */
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    overflow: hidden;
+    min-width: 60px; /* Минимальная ширина чтобы не схлопнулась */
+}
+
+.hp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-success), #00D9B0);
+    width: 100%;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 100px;
+}
+
+.hp-text {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    white-space: nowrap; /* Запрещаем перенос */
+    flex-shrink: 0; /* Запрещаем сжиматься */
+    min-width: 70px; /* Фиксированная минимальная ширина для цифр */
+    text-align: right; /* Выравниваем по правому краю */
+}
+
+/* Иконка редкости - слева внизу */
+/* Иконка редкости - слева внизу */
+.rarity-icon-wrapper {
+    position: relative;
+    cursor: help;
+    flex-shrink: 0;
+}
+
+.rarity-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid;
+    font-size: 1.8rem;
+    background: rgba(0, 0, 0, 0.6);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+/* Тултип для редкости - появляется при наведении */
+.rarity-tooltip {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    background: var(--bg-tertiary);
+    border: 1px solid currentColor;
+    border-radius: var(--border-radius-sm);
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    margin-left: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    z-index: 20;
+}
+
+.rarity-icon-wrapper:hover .rarity-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(5px);
+}
+
+/* Иконки стихий - справа внизу */
+.type-icons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.type-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1.6rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 1024px) {
+    .hp-text {
+        font-size: 0.9rem;
+        min-width: 65px;
+    }
+}
+
+@media (max-width: 768px) {
+    .enemy-bottom {
+        bottom: 12px;
+        left: 12px;
+        right: 12px;
+        gap: 10px;
+    }
+    
+    .enemy-hp {
+        padding: 8px 12px;
+        gap: 8px;
+    }
+    
+    .hp-bar {
+        height: 6px;
+        min-width: 50px;
+    }
+    
+    .hp-text {
+        font-size: 0.85rem;
+        min-width: 60px;
+    }
+    
+    .rarity-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.5rem;
+    }
+    
+    .type-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .enemy-bottom {
+        gap: 6px;
+    }
+    
+    .enemy-hp {
+        padding: 6px 10px;
+        gap: 6px;
+    }
+    
+    .hp-bar {
+        height: 5px;
+        min-width: 40px;
+    }
+    
+    .hp-text {
+        font-size: 0.8rem;
+        min-width: 55px;
+    }
+    
+    .rarity-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.3rem;
+    }
+    
+    .type-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.2rem;
+    }
+}
+
+/* Для очень узких экранов - если совсем мало места */
+@media (max-width: 360px) {
+    .hp-text {
+        font-size: 0.7rem;
+        min-width: 50px;
+    }
+    
+    .hp-bar {
+        min-width: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .enemy-name {
+        font-size: 1.2rem;
+    }
+    
+    .enemy-level {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+    
+    /* Еще больше иконки на очень маленьких экранах */
+    .rarity-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.3rem;
+    }
+    
+    .type-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.2rem;
+    }
+    
+    .enemy-bottom {
+        gap: 6px;
+    }
+    
+    .enemy-hp {
+        padding: 6px 10px;
+    }
+    
+    .hp-bar {
+        height: 6px;
+    }
+    
+    .hp-text {
+        font-size: 0.7rem;
+    }
+}
+
+/* Анимация для врага */
+@keyframes enemyFloat {
+    0%, 100% { 
+        transform: translateY(0) scale(1); 
+    }
+    50% { 
+        transform: translateY(-10px) scale(1.05); 
+    }
+}
    
    /* КОМАНДА ИГРОКА - внизу */
    .player-team {
@@ -1973,4 +2236,106 @@
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 8px;
     }
+}
+
+/* Добавьте в style.css */
+
+/* Стили для магазина */
+.shop-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.shop-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.shop-item:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-warning);
+    box-shadow: 0 10px 30px rgba(253, 203, 110, 0.15);
+}
+
+.shop-item-image-container {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    padding: 10px;
+}
+
+.shop-item-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.shop-item-info {
+    text-align: center;
+}
+
+.shop-item-info h4 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.price {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--accent-warning);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.buy-btn {
+    padding: 10px 32px;
+    background: transparent;
+    border: 1px solid var(--accent-success);
+    border-radius: 100px;
+    color: var(--accent-success);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.buy-btn:hover {
+    background: var(--accent-success);
+    color: white;
+    box-shadow: var(--glow-success);
+}
+
+/* Стили для пустых слотов в коллекции */
+.empty-collection {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.empty-collection i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-collection p {
+    font-size: 1.1rem;
 }
