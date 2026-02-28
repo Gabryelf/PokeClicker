@@ -4,44 +4,131 @@
 
 class UIManager {
     constructor(game, imageManager) {
+        console.log('UIManager инициализируется');
         this.game = game;
         this.imageManager = imageManager;
         this.modals = {};
         this.activeTab = 'collection';
-        this.isProcessingPokeball = false; // Флаг для предотвращения двойных кликов
-        this.hasShownEmptyPokeballNotification = false;  // Флаг для отслеживания показа уведомления о пустых покеболах
+        this.isProcessingPokeball = false;
+        this.hasShownEmptyPokeballNotification = false;
+        
         this.initModals();
         this.createMergeModal();
-        this.setupPokeballClickHandlers();
+        
+        // Не сразу устанавливаем обработчики, ждем загрузки DOM
+        setTimeout(() => {
+            console.log('UIManager: устанавливаем обработчики');
+            this.setupPokeballClickHandlers();
+            this.setupTeamSlotClickHandlers();
+            this.initEventListeners();
+        }, 1000);
     }
     
     initModals() {
-        const modals = ['collection', 'shop', 'team'];
+        const modals = ['collection', 'shop', 'team', 'hero', 'hero-upgrade', 'pokemon-center', 'gym'];
         
         modals.forEach(modalName => {
             const modal = document.getElementById(`${modalName}-modal`);
             if (modal) {
                 this.modals[modalName] = modal;
                 
-                const closeBtn = modal.querySelector('.close');
-                if (closeBtn) {
-                    closeBtn.addEventListener('click', () => {
+                // Находим все кнопки закрытия в этом модальном окне
+                const closeBtns = modal.querySelectorAll('.close, .close-merge, .close-map, .close-hero, .close-upgrade');
+                closeBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         modal.style.display = 'none';
                     });
-                }
+                });
                 
+                // Закрытие по клику вне модального окна
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
                         modal.style.display = 'none';
                     }
                 });
                 
+                // Предотвращаем закрытие при клике на контент
                 const modalContent = modal.querySelector('.modal-content');
                 if (modalContent) {
                     modalContent.addEventListener('click', (e) => {
                         e.stopPropagation();
                     });
                 }
+            }
+        });
+    }
+    
+    initEventListeners() {
+        console.log('Инициализация обработчиков событий UIManager');
+        
+        // Клик по врагу для атаки
+        const enemyCard = document.querySelector('.enemy-card');
+        if (enemyCard) {
+            enemyCard.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.game.manualAttack();
+            });
+        }
+        
+        // Навигационные кнопки - прямой поиск по ID
+        const collectionBtn = document.getElementById('collection-menu');
+        if (collectionBtn) {
+            collectionBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Клик по кнопке коллекции');
+                this.showModal('collection');
+            });
+        } else {
+            console.error('Кнопка коллекции не найдена');
+        }
+        
+        const shopBtn = document.getElementById('shop-menu');
+        if (shopBtn) {
+            shopBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Клик по кнопке магазина');
+                this.showModal('shop');
+            });
+        } else {
+            console.error('Кнопка магазина не найдена');
+        }
+        
+        const mapBtn = document.getElementById('map-menu');
+        if (mapBtn) {
+            mapBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Клик по кнопке карты');
+                if (this.game.mapModal) {
+                    this.game.mapModal.show();
+                } else {
+                    console.error('mapModal не инициализирован');
+                }
+            });
+        } else {
+            console.error('Кнопка карты не найдена');
+        }
+        
+        // Клик по аватару открывает выбор героя
+        const avatarCircle = document.getElementById('avatar-circle');
+        if (avatarCircle) {
+            avatarCircle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Клик по аватару');
+                this.showHeroModal();
+            });
+        }
+        
+        // Горячие клавиши
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.repeat) {
+                e.preventDefault();
+                this.game.manualAttack();
             }
         });
     }
@@ -194,8 +281,76 @@ class UIManager {
         });
     }
     
+    // В классе UIManager найдите и исправьте метод showMergeAnimation:
+
+    showMergeAnimation(mergeData) {
+        console.log('Показ анимации слияния', mergeData);
+        
+        const modal = document.getElementById('merge-modal');
+        if (!modal) {
+            console.error('Модальное окно слияния не найдено!');
+            // Создаем его, если не существует
+            this.createMergeModal();
+            // Пробуем снова через небольшую задержку
+            setTimeout(() => {
+                this.showMergeAnimation(mergeData);
+            }, 100);
+            return;
+        }
+        
+        const pokemon = mergeData.pokemon;
+        
+        const nameEl = modal.querySelector('.merge-name');
+        if (nameEl) {
+            nameEl.textContent = `${pokemon.name} #${pokemon.level}`;
+        }
+        
+        const levelChange = modal.querySelector('.level-change');
+        if (levelChange) {
+            levelChange.innerHTML = `${mergeData.oldLevel} → <span class="increase">${mergeData.newLevel}</span>`;
+        }
+        
+        const damageChange = modal.querySelector('.damage-change');
+        if (damageChange) {
+            damageChange.innerHTML = `${Math.floor(mergeData.oldDamage)} → <span class="increase">${Math.floor(mergeData.newDamage)}</span>`;
+        }
+        
+        const mergeCount = modal.querySelector('.merge-count');
+        if (mergeCount) {
+            mergeCount.textContent = mergeData.mergeCount;
+        }
+        
+        // Загружаем изображения
+        this.loadPokemonImage(modal.querySelector('.original'), pokemon.id);
+        this.loadPokemonImage(modal.querySelector('.duplicate'), pokemon.id);
+        this.loadPokemonImage(modal.querySelector('.result'), pokemon.id);
+        
+        // Показываем модальное окно
+        modal.style.display = 'flex';
+        
+        // Анимация появления элементов
+        const elements = modal.querySelectorAll('.merge-pokemon, .merge-plus, .merge-equals');
+        elements.forEach((el, i) => {
+            el.style.animation = 'none';
+            // Форсируем перерисовку
+            el.offsetHeight;
+            el.style.animation = `mergeAppear 0.5s ease forwards ${i * 0.1}s`;
+        });
+        
+        // Автоматически скрываем через 3 секунды
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 6000);
+    }
+    
+    // Улучшим метод createMergeModal для гарантии создания
     createMergeModal() {
-        if (document.getElementById('merge-modal')) return;
+        if (document.getElementById('merge-modal')) {
+            console.log('Модальное окно слияния уже существует');
+            return;
+        }
+        
+        console.log('Создание модального окна слияния');
         
         const modal = document.createElement('div');
         modal.id = 'merge-modal';
@@ -238,51 +393,111 @@ class UIManager {
         document.body.appendChild(modal);
         
         const closeBtn = modal.querySelector('.close-merge');
-        closeBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                modal.style.display = 'none';
+            });
+        }
         
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
             }
         });
+        
+        // Добавляем стили для анимации, если их нет
+        this.addMergeStyles();
     }
     
-    showMergeAnimation(mergeData) {
-        const modal = document.getElementById('merge-modal');
-        if (!modal) return;
+    addMergeStyles() {
+        // Проверяем, есть ли уже стили
+        if (document.getElementById('merge-styles')) return;
         
-        const pokemon = mergeData.pokemon;
+        const style = document.createElement('style');
+        style.id = 'merge-styles';
+        style.textContent = `
+            .merge-modal .modal-content {
+                max-width: 500px;
+            }
+            
+            .merge-animation {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 15px;
+                margin: 30px 0;
+            }
+            
+            .merge-pokemon {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.1);
+                border: 2px solid var(--accent-primary);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+            
+            .merge-pokemon img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+            
+            .merge-plus, .merge-equals {
+                font-size: 2rem;
+                color: var(--text-secondary);
+                font-weight: bold;
+            }
+            
+            .merge-details {
+                text-align: center;
+            }
+            
+            .merge-name {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+                color: var(--accent-warning);
+            }
+            
+            .merge-stats {
+                display: flex;
+                justify-content: center;
+                gap: 30px;
+            }
+            
+            .stat {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .stat span:first-child {
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+            }
+            
+            .stat .increase {
+                color: var(--accent-success);
+                font-weight: bold;
+            }
+            
+            @keyframes mergeAppear {
+                from {
+                    opacity: 0;
+                    transform: scale(0.5) rotate(-180deg);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1) rotate(0);
+                }
+            }
+        `;
         
-        const nameEl = modal.querySelector('.merge-name');
-        nameEl.textContent = `${pokemon.name} #${pokemon.level}`;
-        
-        const levelChange = modal.querySelector('.level-change');
-        levelChange.innerHTML = `${mergeData.oldLevel} → <span class="increase">${mergeData.newLevel}</span>`;
-        
-        const damageChange = modal.querySelector('.damage-change');
-        damageChange.innerHTML = `${Math.floor(mergeData.oldDamage)} → <span class="increase">${Math.floor(mergeData.newDamage)}</span>`;
-        
-        const mergeCount = modal.querySelector('.merge-count');
-        mergeCount.textContent = mergeData.mergeCount;
-        
-        this.loadPokemonImage(modal.querySelector('.original'), pokemon.id);
-        this.loadPokemonImage(modal.querySelector('.duplicate'), pokemon.id);
-        this.loadPokemonImage(modal.querySelector('.result'), pokemon.id);
-        
-        modal.style.display = 'flex';
-        
-        const elements = modal.querySelectorAll('.merge-pokemon, .merge-plus, .merge-equals');
-        elements.forEach((el, i) => {
-            el.style.animation = 'none';
-            el.offsetHeight;
-            el.style.animation = `mergeAppear 0.5s ease forwards ${i * 0.1}s`;
-        });
-        
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 3000);
+        document.head.appendChild(style);
     }
     
     async loadPokemonImage(container, pokemonId) {
@@ -296,6 +511,7 @@ class UIManager {
     }
     
     showModal(modalName) {
+        console.log('Открытие модального окна:', modalName);
         const modal = this.modals[modalName];
         if (modal) {
             modal.style.display = 'flex';
@@ -306,13 +522,65 @@ class UIManager {
                     this.createCollectionUI();
                     break;
                 case 'shop':
-                    this.game.shopSystem.createShopUI();
+                    if (this.game.shopSystem) {
+                        this.game.shopSystem.createShopUI();
+                    }
                     break;
                 case 'team':
                     this.createTeamSelectionUI();
                     break;
+                default:
+                    console.log('Неизвестное модальное окно:', modalName);
+            }
+        } else {
+            console.error('Модальное окно не найдено:', modalName);
+        }
+    }
+    
+    async updateUI() {
+        console.log('Обновление UI');
+        
+        await this.updateTeamDisplay();
+        
+        if (this.game.battleSystem) {
+            this.game.battleSystem.updateUI();
+        }
+        
+        if (this.game.shopSystem) {
+            this.game.shopSystem.updateMoneyDisplay();
+            this.game.shopSystem.updatePokeballsDisplay();
+        }
+        
+        const team = this.game.pokemonManager.team;
+        if (team.length > 0) {
+            const maxLevel = Math.max(...team.map(p => p.level));
+            const playerLevelEl = document.getElementById('player-level');
+            if (playerLevelEl) {
+                playerLevelEl.textContent = maxLevel;
             }
         }
+        
+        // Обновляем аватар
+        await this.updateAvatar();
+        
+        // Обновляем название локации
+        if (this.game.locationSystem) {
+            const locationNameEl = document.getElementById('current-location-name');
+            if (locationNameEl) {
+                const location = this.game.locationSystem.locations[this.game.locationSystem.currentLocation];
+                locationNameEl.textContent = location ? location.name : 'Паллет Таун';
+            }
+        }
+        
+        // Обновляем бонус героя
+        const heroBonusEl = document.getElementById('hero-bonus-text');
+        if (heroBonusEl && this.game.heroSystem) {
+            const bonus = this.game.heroSystem.getHeroBonus();
+            heroBonusEl.textContent = `+${bonus}%`;
+        }
+        
+        // Обновляем обработчики покеболов
+        this.setupPokeballClickHandlers();
     }
 
     async createShopUI() {
@@ -706,64 +974,241 @@ class UIManager {
         };
         return symbols[type] || '❓';
     }
+
+
+    async updateAvatar() {
+        const avatarCircle = document.getElementById('avatar-circle');
+        const avatarImage = document.getElementById('avatar-image');
+        const avatarName = document.getElementById('avatar-name');
+        const avatarLevel = document.getElementById('avatar-level');
+        
+        if (!avatarCircle || !avatarImage || !avatarName || !avatarLevel) return;
+        
+        const heroSystem = this.game.heroSystem;
+        if (!heroSystem) return;
+        
+        const hero = heroSystem.getHero();
+        if (!hero) return;
+        
+        avatarName.textContent = hero.name;
+        avatarLevel.textContent = heroSystem.heroLevel;
+        
+        // Загружаем изображение героя
+        try {
+            avatarImage.src = hero.image;
+        } catch (e) {
+            console.error('Ошибка загрузки изображения героя:', e);
+        }
+        
+        // Добавляем обработчик клика на аватар
+        avatarCircle.addEventListener('click', () => this.showHeroModal());
+    }
     
+    showHeroModal() {
+        const modal = document.getElementById('hero-modal');
+        if (!modal) return;
+        
+        this.createHeroSelectionUI();
+        modal.style.display = 'flex';
+    }
+    
+    createHeroSelectionUI() {
+        const container = document.getElementById('hero-selection');
+        if (!container) return;
+        
+        const heroSystem = this.game.heroSystem;
+        if (!heroSystem) return;
+        
+        const heroes = heroSystem.heroes;
+        const currentHero = heroSystem.currentHero;
+        
+        container.innerHTML = `
+            <div class="hero-selection-grid">
+                ${Object.entries(heroes).map(([id, hero]) => `
+                    <div class="hero-card ${currentHero === id ? 'selected' : ''}" data-hero-id="${id}">
+                        <div class="hero-avatar" style="border-color: ${hero.color}">
+                            <img src="${hero.image}" alt="${hero.name}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'">
+                        </div>
+                        <h3>${hero.name}</h3>
+                        <p class="hero-description">${hero.description}</p>
+                        <div class="hero-bonus-info">
+                            <span class="hero-bonus-value">+${hero.bonusValue}% за уровень</span>
+                            <p>${hero.bonus}</p>
+                        </div>
+                        <div class="hero-favorite-pokemon">
+                            ${hero.favoritePokemon.map(id => `
+                                <div class="fav-pokemon-icon" title="Любимый покемон">
+                                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" 
+                                         alt="Pokemon" width="30" height="30"
+                                         onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'">
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="select-hero-btn" data-hero-id="${id}">
+                            ${currentHero === id ? 'Выбран' : 'Выбрать'}
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="hero-upgrades-section">
+                <h3>Улучшения героя</h3>
+                <button class="show-upgrades-btn" id="show-upgrades-btn">
+                    <i class="fas fa-chart-line"></i>
+                    Дерево улучшений
+                </button>
+            </div>
+        `;
+        
+        // Добавляем обработчики для выбора героя
+        container.querySelectorAll('.select-hero-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const heroId = btn.dataset.heroId;
+                if (heroSystem.changeHero(heroId)) {
+                    this.createHeroSelectionUI();
+                    this.updateAvatar();
+                    this.updateUI();
+                }
+            });
+        });
+        
+        // Добавляем обработчик для кнопки дерева улучшений
+        const upgradesBtn = document.getElementById('show-upgrades-btn');
+        if (upgradesBtn) {
+            upgradesBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showHeroUpgrades();
+            });
+        }
+    }
+    
+    showHeroUpgrades() {
+        const modal = document.getElementById('hero-upgrade-modal');
+        if (!modal) return;
+        
+        this.createUpgradeTree();
+        modal.style.display = 'flex';
+    }
+    
+    createUpgradeTree() {
+        const container = document.getElementById('hero-upgrade-tree');
+        if (!container) return;
+        
+        const heroSystem = this.game.heroSystem;
+        if (!heroSystem) return;
+        
+        const hero = heroSystem.getHero();
+        const availableUpgrades = heroSystem.getAvailableUpgrades();
+        const purchased = heroSystem.getPurchasedUpgrades();
+        
+        let html = '<div class="upgrade-tree">';
+        
+        // Группируем по уровням
+        for (let tier = 1; tier <= heroSystem.heroLevel; tier++) {
+            const tierUpgrades = hero.upgrades[tier] || [];
+            if (tierUpgrades.length === 0) continue;
+            
+            html += `
+                <div class="upgrade-tier">
+                    <h4><i class="fas fa-star"></i> Уровень ${tier}</h4>
+                    <div class="upgrade-grid">
+            `;
+            
+            tierUpgrades.forEach(upgrade => {
+                const isPurchased = purchased.includes(upgrade.id);
+                const isAvailable = availableUpgrades.some(u => u.id === upgrade.id);
+                
+                let statusClass = '';
+                if (isPurchased) statusClass = 'purchased';
+                else if (isAvailable) statusClass = 'available';
+                
+                html += `
+                    <div class="upgrade-item ${statusClass}" data-upgrade-id="${upgrade.id}">
+                        <div class="upgrade-icon">${upgrade.icon}</div>
+                        <div class="upgrade-name">${upgrade.name}</div>
+                        <div class="upgrade-desc">${upgrade.desc}</div>
+                        ${!isPurchased ? `
+                            <div class="upgrade-cost">
+                                <i class="fas fa-coins"></i>
+                                <span>${upgrade.cost}</span>
+                            </div>
+                        ` : '<div class="purchased-badge">✓ Куплено</div>'}
+                        ${upgrade.prerequisites ? `
+                            <div class="upgrade-prerequisites">
+                                Требуется: ${upgrade.prerequisites.map(p => hero.upgrades[Math.floor(p/10)]?.find(u => u.id === p)?.name || p).join(', ')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            html += '</div></div>';
+        }
+        
+        html += '</div>';
+        container.innerHTML = html;
+        
+        // Добавляем обработчики для доступных улучшений
+        container.querySelectorAll('.upgrade-item.available').forEach(item => {
+            item.addEventListener('click', () => {
+                const upgradeId = item.dataset.upgradeId;
+                heroSystem.purchaseUpgrade(upgradeId);
+                this.createUpgradeTree();
+                this.updateUI();
+            });
+        });
+    }
+    
+    // В классе UIManager найдите и исправьте метод updateUI:
+
     async updateUI() {
+        console.log('Обновление UI');
+        
         await this.updateTeamDisplay();
-        this.game.battleSystem.updateUI();
-        this.game.shopSystem.updateMoneyDisplay();
-        this.game.shopSystem.updatePokeballsDisplay();
+        
+        if (this.game.battleSystem) {
+            this.game.battleSystem.updateUI();
+        }
+        
+        if (this.game.shopSystem) {
+            this.game.shopSystem.updateMoneyDisplay();
+            this.game.shopSystem.updatePokeballsDisplay();
+        }
         
         const team = this.game.pokemonManager.team;
         if (team.length > 0) {
             const maxLevel = Math.max(...team.map(p => p.level));
-            document.getElementById('player-level').textContent = maxLevel;
+            const playerLevelEl = document.getElementById('player-level');
+            if (playerLevelEl) {
+                playerLevelEl.textContent = maxLevel;
+            }
         }
         
-        // Обновляем обработчики покеболов после каждого обновления UI
+        // Обновляем аватар
+        await this.updateAvatar();
+        
+        // Обновляем название локации
+        if (this.game.locationSystem) {
+            const locationNameEl = document.getElementById('current-location-name');
+            if (locationNameEl) {
+                const location = this.game.locationSystem.locations[this.game.locationSystem.currentLocation];
+                locationNameEl.textContent = location ? location.name : 'Паллет Таун';
+            }
+        }
+        
+        // Обновляем бонус героя
+        const heroBonusEl = document.getElementById('hero-bonus-text');
+        if (heroBonusEl && this.game.heroSystem) {
+            const bonus = this.game.heroSystem.getHeroBonus();
+            heroBonusEl.textContent = `+${bonus}%`;
+        }
+        
+        // Обновляем обработчики покеболов
         this.setupPokeballClickHandlers();
-    }
-    
-    initEventListeners() {
-        // Клик по врагу для атаки
-        const enemyCard = document.querySelector('.enemy-card');
-        if (enemyCard) {
-            enemyCard.addEventListener('click', () => {
-                this.game.manualAttack();
-            });
-        }
         
-        // Навигационные кнопки
-        const navButtons = {
-            'collection-menu': 'collection',
-            'shop-menu': 'shop',
-            'team-menu': 'team'
-        };
-        
-        for (const [buttonId, modalName] of Object.entries(navButtons)) {
-            const button = document.getElementById(buttonId);
-            if (button) {
-                button.addEventListener('click', () => {
-                    this.showModal(modalName);
-                });
-            }
-        }
-        
-        // Горячие клавиши
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !e.repeat) {
-                e.preventDefault();
-                this.game.manualAttack();
-            } else if (e.code === 'KeyC' && e.ctrlKey) {
-                e.preventDefault();
-                this.showModal('collection');
-            } else if (e.code === 'KeyT' && e.ctrlKey) {
-                e.preventDefault();
-                this.showModal('team');
-            } else if (e.code === 'KeyS' && e.ctrlKey) {
-                e.preventDefault();
-                this.showModal('shop');
-            }
-        });
+        // Обновляем обработчики слотов команды
+        this.setupTeamSlotClickHandlers();
     }
 }
 

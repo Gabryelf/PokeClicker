@@ -9,7 +9,9 @@
 </head>
 <body>
     <div class="container">
+
         <header>
+            <!-- Левая часть - статистика -->
             <div class="stats-bar">
                 <div class="money-display">
                     <i class="fas fa-coins"></i>
@@ -21,28 +23,54 @@
                 </div>
             </div>
             
-            <div class="nav-buttons">
-                <button class="nav-btn" id="collection-menu">
-                    <i class="fas fa-dragon"></i>
-                    <span>Коллекция</span>
-                </button>
-                <button class="nav-btn" id="team-menu">
-                    <i class="fas fa-users"></i>
-                    <span>Команда</span>
-                </button>
-                <button class="nav-btn" id="shop-menu">
-                    <i class="fas fa-store"></i>
-                    <span>Магазин</span>
-                </button>
+            <!-- Центральная часть с навигацией и аватаром -->
+            <div class="header-center">
+                <!-- Левая группа кнопок -->
+                <div class="nav-left-group">
+                    <button class="nav-btn" id="collection-menu">
+                        <i class="fas fa-dragon"></i>
+                        <span></span>
+                    </button>
+                    <button class="nav-btn" id="shop-menu">
+                        <i class="fas fa-store"></i>
+                        <span></span>
+                    </button>
+                    <button class="nav-btn" id="map-menu">
+                        <i class="fas fa-map"></i>
+                        <span></span>
+                    </button>
+                </div>
+                
+                <!-- АВАТАР -->
+                <div class="avatar-container" id="avatar-container">
+                    <div class="avatar-circle" id="avatar-circle">
+                        <img src="" alt="Avatar" id="avatar-image" class="avatar-image">
+                        <div class="avatar-level" id="avatar-level">1</div>
+                    </div>
+                    <div class="avatar-name" id="avatar-name">Эш</div>
+                </div>
+                
+                <!-- Правая группа (локация и бонус) -->
+                <div class="nav-right-group">
+                    <div class="location-badge-compact" id="location-badge-compact">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="current-location-name">Паллет Таун</span>
+                    </div>
+                    <div class="hero-bonus-compact" id="hero-bonus-compact">
+                        <i class="fas fa-star"></i>
+                        <span id="hero-bonus-text">+0%</span>
+                    </div>
+                </div>
             </div>
             
+            <!-- Правая часть - покеболы -->
             <div class="pokeballs-display">
                 <div class="pokeball-item" data-type="NORMAL">
                     <img src="" alt="Покебол" id="normal-ball-img">
                     <span id="normal-count">5</span>
                 </div>
-                <div class="pokeball-item" data-type="MASTER" >
-                    <img src="" alt="Мастербол" id="master-ball-img" >
+                <div class="pokeball-item" data-type="MASTER">
+                    <img src="" alt="Мастербол" id="master-ball-img">
                     <span id="master-count">0</span>
                 </div>
                 <div class="pokeball-item" data-type="MYTHIC">
@@ -54,7 +82,7 @@
 
         <main>
             <div class="battle-area">
-                <!-- КАРТОЧКА ВРАГА - теперь кликабельная и занимает больше места -->
+                <!-- КАРТОЧКА ВРАГА -->
                 <div class="enemy-card" id="enemy-card">
                     <!-- Верхняя часть -->
                     <div class="enemy-header">
@@ -62,7 +90,7 @@
                         <h2 class="enemy-name" id="enemy-name">Загрузка...</h2>
                     </div>
                     
-                    <!-- Изображение врага (на заднем плане) -->
+                    <!-- Изображение врага -->
                     <div class="enemy-image-container" id="enemy-image-container">
                         <img src="" alt="Противник" class="enemy-image" id="enemy-image">
                     </div>
@@ -72,7 +100,7 @@
                         <!-- Иконка редкости слева с тултипом -->
                         <div class="rarity-icon-wrapper">
                             <div class="rarity-icon" id="enemy-rarity-icon"></div>
-                            <div class="rarity-tooltip" id="enemy-rarity-tooltip"></div> <!-- Это элемент для тултипа -->
+                            <div class="rarity-tooltip" id="enemy-rarity-tooltip"></div>
                         </div>
                         
                         <!-- HP bar в центре -->
@@ -87,20 +115,11 @@
                         <div class="type-icons" id="enemy-type-icons"></div>
                     </div>
                     
-                    <!-- Скрытый бадж редкости (для совместимости) -->
-                    <div class="rarity-badge" id="enemy-rarity" style="display: none;">Обычный</div>
+
                 </div>
 
-                <!-- КОМАНДА ИГРОКА - внизу -->
+                <!-- КОМАНДА ИГРОКА -->
                 <div class="player-team">
-                    <h3>
-                        <!--<i class="fas fa-users"></i>
-                        Твоя команда
-                        <span class="total-damage">
-                            <i class="fas fa-crosshairs"></i>
-                            Урон: <span id="total-damage">0</span>
-                        </span>-->
-                    </h3>
                     <div class="team-slots" id="team-slots">
                         <!-- Динамически заполняется -->
                     </div>
@@ -140,9 +159,54 @@
         </div>
     </div>
 
+    <!-- НОВОЕ МОДАЛЬНОЕ ОКНО ДЛЯ ГЕРОЕВ -->
+    <div id="hero-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-circle"></i> Выбор героя</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body" id="hero-selection"></div>
+        </div>
+    </div>
+
+    <!-- НОВОЕ МОДАЛЬНОЕ ОКНО ДЛЯ УЛУЧШЕНИЙ ГЕРОЯ -->
+    <div id="hero-upgrade-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-chart-line"></i> Улучшения героя</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body" id="hero-upgrade-tree"></div>
+        </div>
+    </div>
+
+    <!-- НОВОЕ МОДАЛЬНОЕ ОКНО ДЛЯ ПОКЕМОН-ЦЕНТРА -->
+    <div id="pokemon-center-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-hospital"></i> Покемон-центр</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body" id="pokemon-center-content"></div>
+        </div>
+    </div>
+
+    <!-- НОВОЕ МОДАЛЬНОЕ ОКНО ДЛЯ АРЕНЫ -->
+    <div id="gym-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-trophy"></i> Арена <span id="gym-name"></span></h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body" id="gym-content"></div>
+        </div>
+    </div>
+
+    <!-- ОСТАЛЬНЫЕ МОДАЛЬНЫЕ ОКНА -->
     <div id="tutorial" class="tutorial-overlay">
         <div class="tutorial-content">
-            <h2><i class="fas fa-graduation-cap"></i> Обучение</h2>
+            <h2><img src="https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/logo/pokemon-logo-2.gif" width="400"> </h2>
             <div class="tutorial-step" id="step-1">
                 <p>Привет, тренер! Сейчас я покажу тебе, как играть.</p>
                 <button class="tutorial-btn next-btn">Далее</button>
@@ -179,6 +243,9 @@
     <script src="animations.js"></script>
     <script src="battle-system.js"></script>
     <script src="location-system.js"></script> 
+    <script src="hero-system.js"></script>
+    <script src="pokemon-center.js"></script>
+    <script src="gym-system.js"></script>
     <script src="map-modal.js"></script>       
     <script src="quests-panel.js"></script>  
     <script src="tutorial.js"></script>

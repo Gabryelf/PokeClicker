@@ -98,251 +98,502 @@
    /* ==============================
       HEADER (Навигация)
       ============================== */
-   
 
-    header {
-        height: 80px;
-        padding: 0 32px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        background: rgba(0, 0, 0, 0.1);
-        flex-wrap: wrap;
-        gap: 8px;
-    }
 
-    .stats-bar {
-        display: flex;
-        gap: 16px;
-        flex-shrink: 0;
-    }
+/* ==============================
+   ИСПРАВЛЕННЫЙ HEADER - АДАПТИВНАЯ ВЕРСИЯ
+   ============================== */
 
-    .money-display, .level-display {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 20px;
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 100px;
-        border: 1px solid rgba(255, 255, 255, 0.03);
-        font-weight: 500;
-        font-size: 1rem;
-        color: var(--text-secondary);
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
+   header {
+    height: auto;
+    min-height: 90px;
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 100;
+    flex-wrap: wrap;
+    gap: 8px;
+}
 
-    /* Навигационные кнопки */
-    .nav-buttons {
-        display: flex;
-        gap: 8px;
-        margin: 0 auto;
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        flex-wrap: wrap;
-        justify-content: center;
-    }
+/* Левая часть - статистика */
+.stats-bar {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 1;
+    min-width: fit-content;
+}
 
+.money-display, .level-display {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.money-display i, .level-display i {
+    font-size: 0.9rem;
+}
+
+/* Центральная часть с навигацией и аватаром */
+.header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    margin: 0 8px;
+    flex-wrap: wrap;
+}
+
+/* Левая группа кнопок */
+.nav-left-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+/* Правая группа (локация и бонус) */
+.nav-right-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+/* Кнопки навигации */
+.nav-btn {
+    background: transparent;
+    border: none;
+    padding: 6px 10px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 100px;
+    white-space: nowrap;
+    height: 36px;
+}
+
+.nav-btn i {
+    font-size: 0.95rem;
+}
+
+.nav-btn:hover {
+    color: var(--accent-primary);
+    background: rgba(108, 92, 231, 0.1);
+}
+
+.nav-btn.active {
+    color: var(--accent-primary);
+    background: rgba(108, 92, 231, 0.15);
+}
+
+/* АВАТАР - центральный элемент */
+.avatar-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin: 0 4px;
+}
+
+.avatar-circle {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.05);
+    border-color: var(--accent-warning);
+    box-shadow: 0 0 20px var(--accent-primary);
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-level {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: var(--accent-tertiary);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-primary);
+}
+
+.avatar-name {
+    font-size: 0.7rem;
+    margin-top: 2px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-align: center;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Компактные элементы */
+.location-badge-compact,
+.hero-bonus-compact {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    height: 36px;
+}
+
+.location-badge-compact {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.location-badge-compact i {
+    font-size: 0.8rem;
+}
+
+.hero-bonus-compact {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid var(--accent-warning);
+    color: var(--accent-warning);
+}
+
+.hero-bonus-compact i {
+    font-size: 0.8rem;
+    color: var(--accent-warning);
+}
+
+/* Правая часть - покеболы */
+.pokeballs-display {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 1;
+    min-width: fit-content;
+}
+
+.pokeball-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 36px;
+}
+
+.pokeball-item:hover {
+    background: rgba(108, 92, 231, 0.1);
+    border-color: var(--accent-primary);
+}
+
+.pokeball-item img {
+    width: 22px !important;
+    height: 22px !important;
+    object-fit: contain;
+}
+
+.pokeball-item span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Адаптивность - все элементы уменьшаются пропорционально */
+@media (max-width: 1400px) {
     .nav-btn {
-        background: transparent;
-        border: none;
-        padding: 10px 20px;
-        color: var(--text-muted);
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        border-radius: 100px;
-        white-space: nowrap;
-    }
-
-    .nav-btn i {
-        font-size: 1.1rem;
-    }
-
-    /* Покеболы в шапке */
-    .pokeballs-display {
-        display: flex;
-        gap: 12px;
-        flex-shrink: 0;
+        padding: 6px 8px;
+        font-size: 0.8rem;
     }
     
-    .pokeball-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 12px;
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 100px;
-        border: 1px solid rgba(255, 255, 255, 0.03);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        position: relative;
-        pointer-events: auto;
-        white-space: nowrap;
-        height: 44px; /* Фиксированная высота */
+    .location-badge-compact,
+    .hero-bonus-compact {
+        padding: 6px 8px;
+        font-size: 0.75rem;
     }
     
-    .pokeball-item img {
-        width: 32px !important;
-        height: 32px !important;
-        object-fit: contain;
-        display: block;
+    .money-display, .level-display {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .nav-btn span {
+        font-size: 0.75rem;
+    }
+    
+    .location-badge-compact span,
+    .hero-bonus-compact span {
+        font-size: 0.7rem;
     }
     
     .pokeball-item span {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        line-height: 1;
+        font-size: 0.8rem;
     }
     
-    /* Пустые слоты команды - теперь кликабельны */
-    .team-slot.empty {
-        background: rgba(255, 255, 255, 0.01);
-        border: 1px dashed rgba(255, 255, 255, 0.05);
-        cursor: pointer !important;
-        transition: all 0.2s ease;
+    .pokeball-item img {
+        width: 20px !important;
+        height: 20px !important;
+    }
+}
+
+@media (max-width: 1024px) {
+    header {
+        padding: 6px 12px;
     }
     
-    .team-slot.empty:hover {
-        background: rgba(108, 92, 231, 0.1);
-        border-color: var(--accent-primary);
-        transform: translateY(-2px);
+    .avatar-circle {
+        width: 48px;
+        height: 48px;
     }
     
-    .team-slot.empty:active {
-        transform: translateY(0);
+    .avatar-level {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
     }
     
-    .team-slot.empty i {
-        font-size: 1.5rem;
-        color: var(--text-muted);
-        opacity: 0.5;
-        transition: opacity 0.2s ease;
+    .nav-btn {
+        padding: 5px 7px;
+        height: 32px;
     }
     
-    .team-slot.empty:hover i {
-        opacity: 1;
-        color: var(--accent-primary);
+    .location-badge-compact,
+    .hero-bonus-compact {
+        padding: 5px 7px;
+        height: 32px;
     }
     
-    .team-slot.empty span {
+    .pokeball-item {
+        height: 32px;
+        padding: 3px 6px;
+    }
+}
+
+@media (max-width: 900px) {
+    .header-center {
+        gap: 4px;
+    }
+    
+    .nav-left-group, .nav-right-group {
+        gap: 2px;
+    }
+    
+    .nav-btn {
+        padding: 4px 6px;
+    }
+    
+    .nav-btn i {
+        font-size: 0.9rem;
+    }
+    
+    .nav-btn span {
         font-size: 0.7rem;
-        color: var(--text-muted);
-        opacity: 0.5;
-        transition: opacity 0.2s ease;
     }
     
-    .team-slot.empty:hover span {
-        opacity: 1;
-        color: var(--accent-primary);
+    .location-badge-compact span,
+    .hero-bonus-compact span {
+        font-size: 0.65rem;
     }
     
-    /* Для разных экранов */
-    @media (max-width: 768px) {
-        .pokeball-item {
-            padding: 4px 8px;
-            height: 38px;
-        }
-        
-        .pokeball-item img {
-            width: 26px !important;
-            height: 26px !important;
-        }
-        
-        .pokeball-item span {
-            font-size: 0.9rem;
-        }
+    .money-display, .level-display {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        min-height: 80px;
+        padding: 5px 8px;
     }
     
-    @media (max-width: 480px) {
-        .pokeball-item {
-            padding: 3px 6px;
-            height: 34px;
-            gap: 4px;
-        }
-        
-        .pokeball-item img {
-            width: 22px !important;
-            height: 22px !important;
-        }
-        
-        .pokeball-item span {
-            font-size: 0.8rem;
-        }
+    .stats-bar {
+        order: 1;
     }
+    
+    .header-center {
+        order: 2;
+        width: 100%;
+        margin: 5px 0 0;
+    }
+    
+    .pokeballs-display {
+        order: 3;
+    }
+    
+    .avatar-circle {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .avatar-name {
+        font-size: 0.65rem;
+    }
+    
+    .money-display, .level-display {
+        padding: 4px 6px;
+        font-size: 0.75rem;
+    }
+    
+    .money-display i, .level-display i {
+        font-size: 0.75rem;
+    }
+    
+    .nav-btn {
+        padding: 4px 5px;
+    }
+    
+    .nav-btn i {
+        font-size: 0.85rem;
+    }
+    
+    .nav-btn span {
+        font-size: 0.65rem;
+    }
+    
+    .location-badge-compact,
+    .hero-bonus-compact {
+        padding: 4px 5px;
+        font-size: 0.7rem;
+    }
+    
+    .location-badge-compact i,
+    .hero-bonus-compact i {
+        font-size: 0.7rem;
+    }
+    
+    .pokeball-item {
+        height: 30px;
+        padding: 3px 5px;
+    }
+    
+    .pokeball-item span {
+        font-size: 0.75rem;
+    }
+    
+    .pokeball-item img {
+        width: 18px !important;
+        height: 18px !important;
+    }
+}
 
-    @media (max-width: 480px) and (orientation: portrait) {
-        header {
-            padding: 6px 8px;
-        }
-        
-        .stats-bar {
-            gap: 4px;
-        }
-        
-        .money-display, .level-display {
-            padding: 6px 8px;
-            gap: 4px;
-            font-size: 0.8rem;
-        }
-        
-        #money, #player-level {
-            font-size: 0.9rem;
-        }
-        
-        .nav-btn {
-            padding: 6px 8px;
-        }
-        
-        .nav-btn i {
-            font-size: 1rem;
-        }
-        
-        .pokeballs-display {
-            gap: 4px;
-        }
-        
-        .pokeball-item {
-            padding: 4px 8px;
-            gap: 4px;
-        }
-        
-        .pokeball-item img {
-            width: 20px;
-            height: 20px;
-        }
-        
-        .pokeball-item span {
-            font-size: 0.8rem;
-        }
+@media (max-width: 600px) {
+    .nav-btn span {
+        display: none; /* На очень маленьких экранах прячем только текст кнопок */
     }
+    
+    .nav-btn {
+        padding: 5px;
+    }
+    
+    .nav-btn i {
+        font-size: 1rem;
+    }
+    
+    .location-badge-compact span,
+    .hero-bonus-compact span {
+        display: inline-block; /* Важные тексты оставляем */
+        font-size: 0.65rem;
+    }
+    
+    .money-display span, .level-display span {
+        font-size: 0.7rem;
+    }
+}
 
-    /* Кликабельные слоты команды */
-    .team-slot {
-        cursor: pointer;
-        transition: all 0.2s ease;
+@media (max-width: 480px) {
+    .money-display span, .level-display span {
+        font-size: 0.65rem;
     }
-
-    .team-slot:not(.empty):hover {
-        transform: translateY(-2px);
-        border-color: var(--accent-primary);
-        box-shadow: var(--glow-primary);
+    
+    .location-badge-compact,
+    .hero-bonus-compact {
+        padding: 3px 4px;
     }
-
-    .team-slot:not(.empty):active {
-        transform: translateY(0);
+    
+    .location-badge-compact i,
+    .hero-bonus-compact i {
+        font-size: 0.65rem;
     }
-
-    .team-slot.empty {
-        cursor: default;
+    
+    .location-badge-compact span,
+    .hero-bonus-compact span {
+        font-size: 0.6rem;
     }
+    
+    .pokeball-item {
+        padding: 2px 4px;
+        height: 28px;
+    }
+    
+    .pokeball-item span {
+        font-size: 0.7rem;
+    }
+    
+    .pokeball-item img {
+        width: 16px !important;
+        height: 16px !important;
+    }
+    
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .avatar-level {
+        width: 16px;
+        height: 16px;
+        font-size: 0.6rem;
+    }
+}
    
    /* ==============================
       MAIN (Боевая зона)
@@ -2338,4 +2589,562 @@
 
 .empty-collection p {
     font-size: 1.1rem;
+}
+
+/* Добавьте в ваш style.css */
+
+/* АВАТАР */
+.avatar-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 20px;
+    cursor: pointer;
+}
+
+.avatar-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.05);
+    border-color: var(--accent-warning);
+    box-shadow: 0 0 20px var(--accent-primary);
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-level {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: var(--accent-tertiary);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-primary);
+}
+
+.avatar-name {
+    font-size: 0.9rem;
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Кнопки навигации под аватаром */
+.nav-buttons-under-avatar {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.nav-buttons-under-avatar .nav-btn {
+    background: transparent;
+    border: none;
+    padding: 5px 10px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 100px;
+    white-space: nowrap;
+}
+
+.nav-buttons-under-avatar .nav-btn i {
+    font-size: 0.9rem;
+}
+
+.nav-buttons-under-avatar .nav-btn:hover {
+    color: var(--accent-primary);
+    background: rgba(108, 92, 231, 0.1);
+}
+
+/* Бейдж локации */
+.location-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--accent-primary);
+    border-radius: 100px;
+    color: var(--accent-primary);
+    backdrop-filter: blur(10px);
+    font-size: 0.9rem;
+}
+
+.location-badge i {
+    font-size: 0.9rem;
+}
+
+/* Бонус героя */
+.hero-bonus {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid var(--accent-warning);
+    border-radius: 100px;
+    color: var(--accent-warning);
+    font-size: 0.85rem;
+    margin-left: auto;
+}
+
+.team-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+}
+
+/* МОДАЛЬНОЕ ОКНО ГЕРОЕВ */
+.hero-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.hero-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.hero-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-primary);
+    box-shadow: var(--glow-primary);
+}
+
+.hero-card.selected {
+    border-color: var(--accent-success);
+    background: rgba(0, 184, 148, 0.1);
+}
+
+.hero-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid;
+    transition: all 0.3s ease;
+}
+
+.hero-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-card h3 {
+    font-size: 1.3rem;
+    color: var(--text-primary);
+}
+
+.hero-bonus-info {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.hero-bonus-value {
+    color: var(--accent-warning);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.hero-favorite-pokemon {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.fav-pokemon-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* ДЕРЕВО УЛУЧШЕНИЙ */
+.upgrade-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    padding: 20px;
+}
+
+.upgrade-tier {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--border-radius-sm);
+    padding: 20px;
+}
+
+.upgrade-tier h4 {
+    color: var(--accent-warning);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.upgrade-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.upgrade-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+}
+
+.upgrade-item.available {
+    opacity: 1;
+    cursor: pointer;
+}
+
+.upgrade-item.available:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-primary);
+    box-shadow: var(--glow-primary);
+}
+
+.upgrade-item.purchased {
+    opacity: 0.8;
+    border-color: var(--accent-success);
+    background: rgba(0, 184, 148, 0.1);
+    cursor: default;
+}
+
+.upgrade-item.purchased:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.upgrade-icon {
+    font-size: 2rem;
+    color: var(--accent-primary);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.upgrade-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.upgrade-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.upgrade-cost {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: var(--accent-warning);
+    font-size: 0.9rem;
+}
+
+.upgrade-cost i {
+    color: var(--accent-warning);
+}
+
+.upgrade-prerequisites {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* ПОКЕМОН-ЦЕНТР */
+.pokemon-center-content {
+    text-align: center;
+    padding: 20px;
+}
+
+.center-image {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: var(--accent-success);
+}
+
+.center-description {
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.center-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.center-stat {
+    text-align: center;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent-success);
+}
+
+.heal-button {
+    padding: 15px 40px;
+    background: linear-gradient(135deg, var(--accent-success), #00b894);
+    border: none;
+    border-radius: 100px;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.heal-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px var(--accent-success);
+}
+
+.heal-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* АРЕНА */
+.gym-content {
+    padding: 20px;
+}
+
+.gym-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.gym-badge {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, var(--accent-warning), #f39c12);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: white;
+    box-shadow: 0 0 30px var(--accent-warning);
+}
+
+.gym-leader {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.gym-description {
+    color: var(--text-secondary);
+}
+
+.gym-battle-area {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--border-radius-sm);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.gym-enemy {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.gym-enemy-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--accent-tertiary);
+}
+
+.gym-enemy-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gym-enemy-info {
+    flex: 1;
+}
+
+.gym-enemy-name {
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+}
+
+.gym-enemy-level {
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+.gym-battle-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--accent-tertiary), #ff6b6b);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.gym-battle-btn:hover:not(:disabled) {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px var(--accent-tertiary);
+}
+
+.gym-battle-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.gym-rewards {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: var(--border-radius-sm);
+}
+
+.gym-rewards h4 {
+    color: var(--accent-warning);
+    margin-bottom: 15px;
+}
+
+.reward-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .avatar-circle {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .nav-buttons-under-avatar .nav-btn span {
+        display: none;
+    }
+    
+    .nav-buttons-under-avatar .nav-btn {
+        padding: 5px;
+    }
+}
+
+@media (max-width: 768px) {
+    .avatar-container {
+        margin: 0 10px;
+    }
+    
+    .avatar-circle {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .avatar-level {
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+    }
+    
+    .avatar-name {
+        font-size: 0.8rem;
+    }
 }
