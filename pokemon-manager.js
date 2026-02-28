@@ -62,18 +62,19 @@ class PokemonManager {
         existingPokemon.mergeCount++;
         
         // Расчет нового урона с уменьшающейся прибавкой
-        // Формула: новый урон = база * множитель редкости * (1 + log2(уровень) * 0.3)
         const rarityMultiplier = GAME_CONFIG.RARITIES[existingPokemon.rarity].damageMultiplier;
         const levelBonus = Math.log2(existingPokemon.level + 1) * 0.3;
         const newDamage = Math.floor(existingPokemon.baseDamage * rarityMultiplier * (1 + levelBonus));
         
         existingPokemon.currentDamage = newDamage;
         
-        // Увеличиваем максимальную энергию (медленнее)
+        // Увеличиваем максимальную энергию
         existingPokemon.maxEnergy = Math.floor(GAME_CONFIG.MAX_ENERGY * (1 + Math.log2(existingPokemon.level) * 0.1));
         
         // Восстанавливаем энергию при слиянии
         existingPokemon.energy = existingPokemon.maxEnergy;
+        
+        console.log(`🎉 Слияние покемона ${existingPokemon.name}: уровень ${oldLevel} -> ${existingPokemon.level}, урон ${Math.floor(oldDamage)} -> ${Math.floor(newDamage)}`);
         
         // Вызываем колбэки для анимации слияния
         this.mergeCallbacks.forEach(callback => {
@@ -168,7 +169,6 @@ class PokemonManager {
         return Math.floor(totalDamage);
     }
     
-    // Метод для отображения целых чисел
     getDisplayDamage(pokemon) {
         return Math.floor(pokemon.currentDamage);
     }

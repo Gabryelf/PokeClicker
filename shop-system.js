@@ -119,7 +119,7 @@ class ShopSystem {
         const items = [
             { type: 'NORMAL', name: 'Покебол', price: GAME_CONFIG.SHOP_PRICES.NORMAL_BALL, icon: 'NORMAL' },
             { type: 'MASTER', name: 'Мастербол', price: GAME_CONFIG.SHOP_PRICES.MASTER_BALL, icon: 'MASTER' },
-            { type: 'MYTHIC', name: 'Мификбол', price: GAME_CONFIG.SHOP_PRICES.MYTHIC_BALL, icon: 'MYTHIC' }
+            { type: 'MYTHIC', name: 'Ультрабол', price: GAME_CONFIG.SHOP_PRICES.MYTHIC_BALL, icon: 'MYTHIC' }
         ];
         
         for (const item of items) {

@@ -15,6 +15,9 @@ class PokemonClickerGame {
         this.locationSystem = null;
         this.mapModal = null;
         this.questsPanel = null;
+        this.heroSystem = null;
+        this.pokemonCenter = null;
+        this.gymSystem = null;
         
         // Менеджер изображений
         this.imageManager = null;
@@ -81,57 +84,73 @@ class PokemonClickerGame {
                 throw new Error('QuestsPanel не определен');
             }
             
+            if (typeof HeroSystem === 'undefined') {
+                throw new Error('HeroSystem не определен');
+            }
+            
+            if (typeof PokemonCenter === 'undefined') {
+                throw new Error('PokemonCenter не определен');
+            }
+            
+            if (typeof GymSystem === 'undefined') {
+                throw new Error('GymSystem не определен');
+            }
+            
             // 1. Инициализируем менеджер изображений
             this.imageManager = new ImageManager(IMAGE_CONFIG);
-            
+
             // 2. Предзагружаем изображения
             await this.imageManager.preloadAll();
             console.log('✅ Все изображения загружены!');
-            
+
             // 3. Загружаем сохранение
             this.saveManager = new SaveManager();
-            this.loadGame();
-            
-            // 4. Инициализируем системы
+
+            // 4. Инициализируем базовые системы (без зависимостей)
             this.pokemonManager = new PokemonManager();
-            this.shopSystem = new ShopSystem(this.pokemonManager, this, this.imageManager);
-            this.battleSystem = new BattleSystem(this.pokemonManager, this, this.imageManager);
-            this.locationSystem = new LocationSystem(this);
-            this.uiManager = new UIManager(this, this.imageManager);
             this.animationManager = new AnimationManager();
+
+                // 5. Инициализируем системы, которые зависят от game
+            this.heroSystem = new HeroSystem(this);
+            this.shopSystem = new ShopSystem(this.pokemonManager, this, this.imageManager);
+            this.locationSystem = new LocationSystem(this);
+            this.pokemonCenter = new PokemonCenter(this);
+            this.gymSystem = new GymSystem(this);
+
+            // 6. Инициализируем BattleSystem
+            this.battleSystem = new BattleSystem(this.pokemonManager, this, this.imageManager);
+
+            // 7. Инициализируем UI системы
+            this.uiManager = new UIManager(this, this.imageManager);
             this.mapModal = new MapModal(this, this.locationSystem);
             this.questsPanel = new QuestsPanel(this, this.locationSystem);
             
-            // 5. Подписываемся на события слияния
+            // 8. Подписываемся на события слияния (ЭТО ВАЖНО!)
             this.pokemonManager.onMerge((mergeData) => {
-                this.uiManager.showMergeAnimation(mergeData);
+                console.log('🔥 Событие слияния получено!', mergeData);
+                if (this.uiManager) {
+                    this.uiManager.showMergeAnimation(mergeData);
+                }
                 this.showNotification(
                     `${mergeData.pokemon.name} достиг ${mergeData.newLevel} уровня!`,
                     'success'
                 );
-                this.locationSystem.updateQuestProgress('merge_pokemon', 1, mergeData);
+                if (this.locationSystem) {
+                    this.locationSystem.updateQuestProgress('merge_pokemon', 1, mergeData);
+                }
             });
             
-            // 6. Инициализируем UI
-            this.animationManager.initCSSAnimations();
-            this.uiManager.initEventListeners();
-            
-            // 7. Инициализируем туториал
+            // 9. Инициализируем туториал
             this.tutorialSystem = new TutorialSystem(this);
             
-            // 8. Создаем первого противника
-            if (!this.battleSystem.currentEnemy) {
-                this.battleSystem.createNewEnemy();
-            }
-            
-            // 9. Обновляем UI
+            // 10. Обновляем UI
             await this.uiManager.updateUI();
             
-            // 10. Запускаем таймеры
+            // 11. Запускаем таймеры
             this.startEnergyRestore();
             this.startAutoSave();
             
-            // 11. Инициализируем звуки
+            // 12. Инициализируем звуки
             if (typeof GameSoundGenerator !== 'undefined') {
                 GameSoundGenerator.init();
                 document.addEventListener('click', function activateSound() {
@@ -140,52 +159,44 @@ class PokemonClickerGame {
                 }, { once: true });
             }
             
-            // 12. Обновляем изображения покеболов
+            // 13. Обновляем изображения покеболов
             await updatePokeballImages(this.imageManager);
             
-            // 13. Убираем кнопку команды из хедера и добавляем карту
-            this.updateHeaderButtons();
+            // 14. Обновляем хедер
+            this.updateHeaderUI();
+            
+            // 15. Инициализируем обработчики событий UI
+            setTimeout(() => {
+                if (this.uiManager) {
+                    this.uiManager.initEventListeners();
+                }
+            }, 500);
             
             this.isInitialized = true;
             console.log('✅ Игра успешно инициализирована!');
             
         } catch (error) {
             console.error('❌ Ошибка инициализации игры:', error);
-            // Показываем сообщение об ошибке пользователю
             this.showErrorMessage(error.message);
         }
     }
-    
-    updateHeaderButtons() {
-        // Удаляем кнопку команды
-        const teamButton = document.getElementById('team-menu');
-        if (teamButton) {
-            teamButton.remove();
-        }
+
+    updateHeaderUI() {
+        // Убираем старые кнопки
+        const oldNav = document.querySelector('.nav-buttons');
+        if (oldNav) oldNav.style.display = 'none';
         
-        // Добавляем кнопку карты
-        const navButtons = document.querySelector('.nav-buttons');
-        if (navButtons) {
-            const mapButton = document.createElement('button');
-            mapButton.className = 'nav-btn';
-            mapButton.id = 'map-menu';
-            mapButton.innerHTML = '<i class="fas fa-map"></i><span>Карта</span>';
-            mapButton.addEventListener('click', () => {
-                this.mapModal.show();
-            });
-            navButtons.appendChild(mapButton);
-        }
-        
-        // Делаем слоты команды кликабельными
-        this.makeTeamSlotsClickable();
+        // Показываем новый аватар
+        const avatarContainer = document.getElementById('avatar-container');
+        if (avatarContainer) avatarContainer.style.display = 'flex';
     }
     
     makeTeamSlotsClickable() {
         const teamSlots = document.getElementById('team-slots');
         if (teamSlots) {
             teamSlots.addEventListener('click', (e) => {
-                // Проверяем, кликнули ли на слот (не на пустой)
-                const slot = e.target.closest('.team-slot:not(.empty)');
+                // Проверяем, кликнули ли на слот
+                const slot = e.target.closest('.team-slot');
                 if (slot) {
                     // Открываем окно управления командой
                     this.uiManager.showModal('team');
@@ -282,7 +293,10 @@ class PokemonClickerGame {
         return this.saveManager.save(this.gameState);
     }
     
+    // ЕДИНСТВЕННЫЙ МЕТОД manualAttack
     manualAttack() {
+        console.log('Ручная атака');
+        
         if (this.tutorialSystem && this.tutorialSystem.isTutorialActive) {
             this.showNotification('Заверши обучение сначала!', 'warning');
             return;
@@ -292,6 +306,14 @@ class PokemonClickerGame {
             this.showNotification('Добавь покемонов в команду для атаки!', 'warning');
             this.uiManager.showModal('team');
             return;
+        }
+        
+        // Применяем бонус героя к урону
+        let totalDamage = this.pokemonManager.getTeamDamage();
+        
+        if (this.heroSystem) {
+            const bonus = this.heroSystem.getHeroBonus() / 100;
+            totalDamage = Math.floor(totalDamage * (1 + bonus));
         }
         
         const result = this.battleSystem.attackEnemy();
@@ -319,6 +341,11 @@ class PokemonClickerGame {
             if (this.locationSystem) {
                 this.locationSystem.updateQuestProgress('defeat_enemies', 1);
                 this.locationSystem.updateQuestProgress('team_damage', result.damage);
+            }
+            
+            // Даем опыт герою за атаку
+            if (this.heroSystem) {
+                this.heroSystem.addExp(1);
             }
         }
         
@@ -487,7 +514,9 @@ window.addEventListener('load', async () => {
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Space' && !e.repeat) {
             e.preventDefault();
-            game.manualAttack();
+            if (game && game.manualAttack) {
+                game.manualAttack();
+            }
         }
     });
 });

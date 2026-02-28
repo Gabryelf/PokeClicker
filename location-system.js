@@ -9,210 +9,211 @@ class LocationSystem {
         this.availableLocations = ['pallet_town'];
         this.transitionInProgress = false;
         this.transitionEndTime = null;
+        this.transitionTarget = null; // Добавляем target для перехода
         this.dailyQuests = {};
         this.lastQuestUpdate = null;
         
-        // Карта региона Канто
+        // Карта региона Канто с типами локаций
         this.locations = {
             'pallet_town': {
                 name: 'Паллет Таун',
                 description: 'Тихий городок, где начинаются приключения',
                 neighbors: ['route_1'],
                 icon: '🏠',
+                type: 'town',
+                hasPokemonCenter: true,
+                hasGym: false,
                 questCount: 3,
-                position: { x: 40, y: 80 }
+                position: { x: 40, y: 80 },
+                pokemonPool: ['rattata', 'pidgey']
             },
             'route_1': {
                 name: 'Маршрут 1',
                 description: 'Дорога через зеленые луга',
                 neighbors: ['pallet_town', 'viridian_city'],
                 icon: '🛤️',
+                type: 'route',
+                hasPokemonCenter: false,
+                hasGym: false,
                 questCount: 3,
-                position: { x: 40, y: 60 }
+                position: { x: 40, y: 60 },
+                pokemonPool: ['rattata', 'pidgey', 'spearow']
             },
             'viridian_city': {
                 name: 'Веридиан Сити',
                 description: 'Город с видом на вечнозеленый лес',
                 neighbors: ['route_1', 'route_2', 'route_22'],
                 icon: '🏙️',
+                type: 'city',
+                hasPokemonCenter: true,
+                hasGym: true,
+                gymId: 'viridian_city',
                 questCount: 4,
-                position: { x: 40, y: 40 }
+                position: { x: 40, y: 40 },
+                pokemonPool: ['rattata', 'pidgey']
             },
             'route_2': {
                 name: 'Маршрут 2',
                 description: 'Дорога к лесу',
                 neighbors: ['viridian_city', 'viridian_forest'],
                 icon: '🛤️',
+                type: 'route',
+                hasPokemonCenter: false,
+                hasGym: false,
                 questCount: 3,
-                position: { x: 25, y: 30 }
+                position: { x: 25, y: 30 },
+                pokemonPool: ['rattata', 'pidgey', 'spearow', 'ekans']
             },
             'viridian_forest': {
                 name: 'Веридианский лес',
                 description: 'Густой лес с множеством насекомых',
                 neighbors: ['route_2', 'pewter_city'],
                 icon: '🌲',
+                type: 'forest',
+                hasPokemonCenter: false,
+                hasGym: false,
                 questCount: 4,
-                position: { x: 25, y: 20 }
+                position: { x: 25, y: 20 },
+                pokemonPool: ['caterpie', 'metapod', 'weedle', 'kakuna', 'pidgey']
             },
             'pewter_city': {
                 name: 'Пьютер Сити',
                 description: 'Город у подножия гор',
                 neighbors: ['viridian_forest', 'route_3'],
                 icon: '⛰️',
+                type: 'city',
+                hasPokemonCenter: true,
+                hasGym: true,
+                gymId: 'pewter_city',
                 questCount: 4,
-                position: { x: 25, y: 10 }
+                position: { x: 25, y: 10 },
+                pokemonPool: ['rattata', 'pidgey', 'sandshrew']
             },
             'route_3': {
                 name: 'Маршрут 3',
                 description: 'Горная тропа',
                 neighbors: ['pewter_city', 'mt_moon'],
                 icon: '🛤️',
+                type: 'route',
+                hasPokemonCenter: false,
+                hasGym: false,
                 questCount: 3,
-                position: { x: 40, y: 10 }
+                position: { x: 40, y: 10 },
+                pokemonPool: ['geodude', 'sandshrew', 'mankey']
             },
             'mt_moon': {
                 name: 'Лунная гора',
                 description: 'Таинственная гора с пещерами',
                 neighbors: ['route_3', 'cerulean_city'],
                 icon: '🌙',
+                type: 'cave',
+                hasPokemonCenter: false,
+                hasGym: false,
                 questCount: 4,
-                position: { x: 55, y: 10 }
+                position: { x: 55, y: 10 },
+                pokemonPool: ['zubat', 'geodude', 'paras']
             },
             'cerulean_city': {
                 name: 'Церулин Сити',
                 description: 'Город с красивыми фонтанами',
                 neighbors: ['mt_moon', 'route_4', 'route_5', 'route_9'],
                 icon: '💧',
+                type: 'city',
+                hasPokemonCenter: true,
+                hasGym: true,
+                gymId: 'cerulean_city',
                 questCount: 4,
-                position: { x: 70, y: 15 }
-            },
-            'route_4': {
-                name: 'Маршрут 4',
-                description: 'Дорога вдоль реки',
-                neighbors: ['cerulean_city'],
-                icon: '🛤️',
-                questCount: 3,
-                position: { x: 85, y: 15 }
-            },
-            'route_5': {
-                name: 'Маршрут 5',
-                description: 'Тихая дорога на юг',
-                neighbors: ['cerulean_city', 'vermilion_city'],
-                icon: '🛤️',
-                questCount: 3,
-                position: { x: 70, y: 30 }
+                position: { x: 70, y: 15 },
+                pokemonPool: ['rattata', 'pidgey', 'psyduck']
             },
             'vermilion_city': {
                 name: 'Вермилион Сити',
                 description: 'Портовый город с большим кораблем',
                 neighbors: ['route_5', 'route_6'],
                 icon: '⚓',
+                type: 'city',
+                hasPokemonCenter: true,
+                hasGym: true,
+                gymId: 'vermilion_city',
                 questCount: 4,
-                position: { x: 70, y: 45 }
-            },
-            'route_6': {
-                name: 'Маршрут 6',
-                description: 'Дорога вдоль побережья',
-                neighbors: ['vermilion_city'],
-                icon: '🛤️',
-                questCount: 3,
-                position: { x: 70, y: 60 }
-            },
-            'route_9': {
-                name: 'Маршрут 9',
-                description: 'Извилистая горная дорога',
-                neighbors: ['cerulean_city', 'rock_tunnel'],
-                icon: '🛤️',
-                questCount: 3,
-                position: { x: 85, y: 30 }
-            },
-            'rock_tunnel': {
-                name: 'Каменный туннель',
-                description: 'Темный туннель сквозь гору',
-                neighbors: ['route_9', 'lavender_town'],
-                icon: '🚇',
-                questCount: 4,
-                position: { x: 85, y: 45 }
-            },
-            'lavender_town': {
-                name: 'Лавандовый город',
-                description: 'Город с Башней Покемонов',
-                neighbors: ['rock_tunnel', 'route_8'],
-                icon: '🔮',
-                questCount: 4,
-                position: { x: 85, y: 60 }
-            },
-            'route_8': {
-                name: 'Маршрут 8',
-                description: 'Дорога через холмы',
-                neighbors: ['lavender_town', 'saffron_city'],
-                icon: '🛤️',
-                questCount: 3,
-                position: { x: 70, y: 70 }
+                position: { x: 70, y: 45 },
+                pokemonPool: ['meowth', 'pidgey', 'machop']
             },
             'saffron_city': {
                 name: 'Саффрон Сити',
                 description: 'Крупный город с офисами',
-                neighbors: ['route_7', 'route_8', 'route_16'],
+                neighbors: ['route_5', 'route_6', 'route_7', 'route_8'],
                 icon: '🏢',
+                type: 'city',
+                hasPokemonCenter: true,
+                hasGym: true,
+                gymId: 'saffron_city',
                 questCount: 4,
-                position: { x: 55, y: 70 }
-            },
-            'route_7': {
-                name: 'Маршрут 7',
-                description: 'Дорога через поля',
-                neighbors: ['saffron_city', 'celadon_city'],
-                icon: '🛤️',
-                questCount: 3,
-                position: { x: 40, y: 70 }
+                position: { x: 55, y: 45 },
+                pokemonPool: ['abra', 'drowzee', 'meowth']
             },
             'celadon_city': {
                 name: 'Селадон Сити',
                 description: 'Большой город с торговым центром',
                 neighbors: ['route_7', 'route_16'],
                 icon: '🛍️',
+                type: 'city',
+                hasPokemonCenter: true,
+                hasGym: true,
+                gymId: 'celadon_city',
                 questCount: 4,
-                position: { x: 25, y: 70 }
-            },
-            'route_16': {
-                name: 'Маршрут 16',
-                description: 'Дорога к циклопу',
-                neighbors: ['celadon_city', 'saffron_city', 'fuchsia_city'],
-                icon: '🛤️',
-                questCount: 3,
-                position: { x: 30, y: 85 }
+                position: { x: 40, y: 45 },
+                pokemonPool: ['gloom', 'bellsprout', 'ekans']
             },
             'fuchsia_city': {
                 name: 'Фуксия Сити',
                 description: 'Город с сафари-зоной',
-                neighbors: ['route_16', 'route_15', 'route_18'],
+                neighbors: ['route_15', 'route_18', 'route_19'],
                 icon: '🦒',
+                type: 'city',
+                hasPokemonCenter: true,
+                hasGym: true,
+                gymId: 'fuchsia_city',
                 questCount: 4,
-                position: { x: 45, y: 95 }
+                position: { x: 55, y: 70 },
+                pokemonPool: ['venonat', 'krabby', 'kingler']
             },
-            'route_15': {
-                name: 'Маршрут 15',
-                description: 'Прибрежная дорога',
-                neighbors: ['fuchsia_city'],
-                icon: '🛤️',
-                questCount: 3,
-                position: { x: 60, y: 95 }
+            'lavender_town': {
+                name: 'Лавандовый город',
+                description: 'Город с Башней Покемонов',
+                neighbors: ['route_8', 'route_10'],
+                icon: '🔮',
+                type: 'town',
+                hasPokemonCenter: true,
+                hasGym: false,
+                questCount: 4,
+                position: { x: 70, y: 55 },
+                pokemonPool: ['gastly', 'haunter', 'cubone']
             },
-            'route_18': {
-                name: 'Маршрут 18',
-                description: 'Дорога через луга',
-                neighbors: ['fuchsia_city'],
-                icon: '🛤️',
-                questCount: 3,
-                position: { x: 30, y: 95 }
+            'cinnabar_island': {
+                name: 'Циннабар',
+                description: 'Вулканический остров',
+                neighbors: ['route_20', 'route_21'],
+                icon: '🌋',
+                type: 'island',
+                hasPokemonCenter: true,
+                hasGym: true,
+                gymId: 'cinnabar_island',
+                questCount: 4,
+                position: { x: 85, y: 80 },
+                pokemonPool: ['growlithe', 'ponyta', 'magmar']
             },
-            'route_22': {
-                name: 'Маршрут 22',
-                description: 'Дорога к Лиге',
-                neighbors: ['viridian_city'],
-                icon: '🛤️',
-                questCount: 3,
-                position: { x: 10, y: 40 }
+            'indigo_plateau': {
+                name: 'Плато Индиго',
+                description: 'Штаб-квартира Лиги Покемонов',
+                neighbors: ['route_23'],
+                icon: '🏆',
+                type: 'special',
+                hasPokemonCenter: true,
+                hasGym: false,
+                questCount: 5,
+                position: { x: 55, y: 5 },
+                pokemonPool: ['articuno', 'zapdos', 'moltres', 'mewtwo']
             }
         };
         
@@ -260,7 +261,17 @@ class LocationSystem {
             }
         ];
         
-        this.init();
+        // Загружаем прогресс вместо вызова init
+        this.loadProgress();
+        this.updateDailyQuests();
+        
+        // Проверяем, не истек ли таймер перехода
+        if (this.transitionEndTime) {
+            const now = Date.now();
+            if (now >= this.transitionEndTime) {
+                this.completeTransition();
+            }
+        }
     }
     
     init() {

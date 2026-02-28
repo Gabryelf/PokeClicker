@@ -295,7 +295,7 @@ const CONFIG = {
             imageKey: 'MASTER'
         },
         MYTHIC: {
-            name: 'Мификбол',
+            name: 'Ультрабол',
             description: 'Легендарный покебол. Максимальный шанс получить легендарных покемонов.',
             price: 500,
             color: '#ffd700',
