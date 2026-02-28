@@ -13,7 +13,7 @@
             <div class="stats-bar">
                 <div class="money-display">
                     <i class="fas fa-coins"></i>
-                    <span><span id="money">100</span> ₽</span>
+                    <span><span id="money">100</span></span>
                 </div>
                 <div class="level-display">
                     <i class="fas fa-star"></i>
@@ -41,8 +41,8 @@
                     <img src="" alt="Покебол" id="normal-ball-img">
                     <span id="normal-count">5</span>
                 </div>
-                <div class="pokeball-item" data-type="MASTER">
-                    <img src="" alt="Мастербол" id="master-ball-img">
+                <div class="pokeball-item" data-type="MASTER" >
+                    <img src="" alt="Мастербол" id="master-ball-img" >
                     <span id="master-count">0</span>
                 </div>
                 <div class="pokeball-item" data-type="MYTHIC">
@@ -56,24 +56,39 @@
             <div class="battle-area">
                 <!-- КАРТОЧКА ВРАГА - теперь кликабельная и занимает больше места -->
                 <div class="enemy-card" id="enemy-card">
+                    <!-- Верхняя часть -->
                     <div class="enemy-header">
-                        <h2 class="enemy-name" id="enemy-name">Загрузка...</h2>
                         <span class="enemy-level" id="enemy-level">1</span>
+                        <h2 class="enemy-name" id="enemy-name">Загрузка...</h2>
                     </div>
                     
-                    <div class="enemy-hp">
-                        <div class="hp-bar">
-                            <div class="hp-fill" id="enemy-hp-bar" style="width: 100%"></div>
-                        </div>
-                        <div class="hp-text" id="enemy-hp-text">100/100</div>
-                    </div>
-                    
+                    <!-- Изображение врага (на заднем плане) -->
                     <div class="enemy-image-container" id="enemy-image-container">
-                        <div class="rarity-badge" id="enemy-rarity">Обычный</div>
-                        <div class="type-icons" id="enemy-type-icons"></div>
-                        <div class="rarity-icon" id="enemy-rarity-icon"></div>
                         <img src="" alt="Противник" class="enemy-image" id="enemy-image">
                     </div>
+                    
+                    <!-- Нижняя часть с HP и иконками -->
+                    <div class="enemy-bottom">
+                        <!-- Иконка редкости слева с тултипом -->
+                        <div class="rarity-icon-wrapper">
+                            <div class="rarity-icon" id="enemy-rarity-icon"></div>
+                            <div class="rarity-tooltip" id="enemy-rarity-tooltip"></div> <!-- Это элемент для тултипа -->
+                        </div>
+                        
+                        <!-- HP bar в центре -->
+                        <div class="enemy-hp">
+                            <div class="hp-bar">
+                                <div class="hp-fill" id="enemy-hp-bar" style="width: 100%"></div>
+                            </div>
+                            <div class="hp-text" id="enemy-hp-text">100/100</div>
+                        </div>
+                        
+                        <!-- Иконки стихий справа -->
+                        <div class="type-icons" id="enemy-type-icons"></div>
+                    </div>
+                    
+                    <!-- Скрытый бадж редкости (для совместимости) -->
+                    <div class="rarity-badge" id="enemy-rarity" style="display: none;">Обычный</div>
                 </div>
 
                 <!-- КОМАНДА ИГРОКА - внизу -->

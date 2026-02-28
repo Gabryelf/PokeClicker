@@ -9,6 +9,7 @@ class UIManager {
         this.modals = {};
         this.activeTab = 'collection';
         this.isProcessingPokeball = false; // Флаг для предотвращения двойных кликов
+        this.hasShownEmptyPokeballNotification = false;  // Флаг для отслеживания показа уведомления о пустых покеболах
         this.initModals();
         this.createMergeModal();
         this.setupPokeballClickHandlers();
@@ -60,6 +61,25 @@ class UIManager {
             item.addEventListener('click', this.pokeballClickHandler);
         });
     }
+
+    setupTeamSlotClickHandlers() {
+        const teamSlots = document.getElementById('team-slots');
+        if (teamSlots) {
+            // Удаляем старые обработчики
+            teamSlots.removeEventListener('click', this.teamSlotClickHandler);
+            
+            this.teamSlotClickHandler = (e) => {
+                // Проверяем, кликнули ли на слот (включая пустые)
+                const slot = e.target.closest('.team-slot');
+                if (slot) {
+                    // Открываем окно управления командой
+                    this.showModal('team');
+                }
+            };
+            
+            teamSlots.addEventListener('click', this.teamSlotClickHandler);
+        }
+    }
     
     handlePokeballClick(type) {
         // Предотвращаем множественные клики
@@ -72,10 +92,15 @@ class UIManager {
         
         if (count > 0) {
             this.isProcessingPokeball = true;
+            this.hasShownEmptyPokeballNotification = false; // Сбрасываем флаг при успешном открытии
             this.openPokeballWithAnimation(type);
         } else {
+            // Показываем уведомление только если оно еще не было показано в этой сессии кликов
+            if (!this.hasShownEmptyPokeballNotification) {
+                this.game.showNotification('Купите покеболы в магазине!', 'warning');
+                this.hasShownEmptyPokeballNotification = true;
+            }
             this.showModal('shop');
-            this.game.showNotification('Купите покеболы в магазине!', 'warning');
         }
     }
     
@@ -289,6 +314,66 @@ class UIManager {
             }
         }
     }
+
+    async createShopUI() {
+        const shopContainer = document.getElementById('shop-items');
+        if (!shopContainer) return;
+        
+        shopContainer.innerHTML = '';
+        
+        const items = [
+            { type: 'NORMAL_BALL', name: 'Покебол', price: GAME_CONFIG.SHOP_PRICES.NORMAL_BALL, icon: 'NORMAL' },
+            { type: 'MASTER_BALL', name: 'Мастербол', price: GAME_CONFIG.SHOP_PRICES.MASTER_BALL, icon: 'MASTER' },
+            { type: 'MYTHIC_BALL', name: 'Мификбол', price: GAME_CONFIG.SHOP_PRICES.MYTHIC_BALL, icon: 'MYTHIC' }
+        ];
+        
+        for (const item of items) {
+            const itemElement = document.createElement('div');
+            itemElement.className = 'shop-item';
+            
+            // Создаем изображение
+            const img = document.createElement('img');
+            img.className = 'shop-item-image';
+            img.alt = item.name;
+            img.width = 80;
+            img.height = 80;
+            
+            try {
+                const pokeballImg = await this.imageManager.getPokeballImage(item.icon);
+                img.src = pokeballImg.src;
+            } catch (e) {
+                console.error(`❌ Ошибка загрузки изображения для ${item.name}:`, e);
+                // Запасной вариант
+                img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
+            }
+            
+            itemElement.innerHTML = `
+                <div class="shop-item-image-container">
+                    <img src="${img.src}" alt="${item.name}" class="shop-item-image" width="80" height="80">
+                </div>
+                <div class="shop-item-info">
+                    <h4>${item.name}</h4>
+                    <div class="price">
+                        <i class="fas fa-coins"></i>
+                        <span>${item.price}</span>
+                    </div>
+                </div>
+                <button class="buy-btn" data-type="${item.type.split('_')[0]}">Купить</button>
+            `;
+            
+            shopContainer.appendChild(itemElement);
+        }
+        
+        // Добавляем обработчики
+        shopContainer.querySelectorAll('.buy-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const ballType = e.target.dataset.type;
+                this.game.shopSystem.buyPokeball(ballType);
+                // Обновляем магазин после покупки
+                this.createShopUI();
+            });
+        });
+    }
     
     setActiveTab(tabName) {
         this.activeTab = tabName;
@@ -334,6 +419,7 @@ class UIManager {
         const rarity = GAME_CONFIG.RARITIES[pokemon.rarity];
         const energyPercent = (pokemon.energy / pokemon.maxEnergy) * 100;
         
+        // Создаем изображение
         const img = document.createElement('img');
         img.className = 'pokemon-image';
         img.alt = pokemon.name;
@@ -345,10 +431,14 @@ class UIManager {
             img.src = pokemonImg.src;
         } catch (e) {
             console.error(`❌ Ошибка загрузки изображения для ${pokemon.name}:`, e);
+            // Запасной вариант
+            img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
         }
         
         card.innerHTML = `
-            ${img.outerHTML}
+            <div class="pokemon-image-container">
+                <img src="${img.src}" alt="${pokemon.name}" class="pokemon-image" width="100" height="100">
+            </div>
             <h4>${pokemon.name}</h4>
             <div class="pokemon-rarity" style="color: ${rarity.color}; border-color: ${rarity.color}">
                 ${rarity.name}
@@ -543,9 +633,11 @@ class UIManager {
         teamSlots.innerHTML = '';
         const team = this.game.pokemonManager.team;
         
+        // Заполняем слоты команды
         for (const pokemon of team) {
             const slot = document.createElement('div');
             slot.className = 'team-slot';
+            slot.dataset.id = pokemon.id;
             slot.style.setProperty('--i', Math.random() * 2);
             
             const img = document.createElement('img');
@@ -573,12 +665,17 @@ class UIManager {
             teamSlots.appendChild(slot);
         }
         
+        // Заполняем пустые слоты - теперь они кликабельны
         for (let i = team.length; i < this.game.pokemonManager.maxTeamSize; i++) {
             const emptySlot = document.createElement('div');
             emptySlot.className = 'team-slot empty';
+            emptySlot.dataset.empty = 'true';
             emptySlot.innerHTML = '<i class="fas fa-plus"></i><span>Пусто</span>';
             teamSlots.appendChild(emptySlot);
         }
+        
+        // Обновляем обработчики для пустых слотов
+        this.setupTeamSlotClickHandlers();
     }
     
     getTypeIcons(types, mini = false) {
