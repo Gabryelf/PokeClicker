@@ -11,8 +11,6 @@
 ![Версия](https://img.shields.io/badge/версия-0.0.6-brightgreen)
 ![Статус](https://img.shields.io/badge/статус-активная%20разработка-orange)
 ![Покемоны](https://img.shields.io/badge/покемоны-50%2B-blue)
-![Версия](https://img.shields.io/badge/версия-0.0.4-blue)
-![Статус](https://img.shields.io/badge/статус-в%20разработке-yellow)
 ![Лицензия](https://img.shields.io/badge/лицензия-MIT-green)
 
 ## 🎯 Основные возможности (v0.0.6)
