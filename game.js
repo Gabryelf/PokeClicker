@@ -105,6 +105,13 @@ class PokemonClickerGame {
 
             // 3. Загружаем сохранение
             this.saveManager = new SaveManager();
+            this.saveManager.clear();
+            // Для сброса туториала - выполните в консоли браузера
+            localStorage.removeItem('pokemon_tutorial_completed');
+            
+            if (window.gameInstance && window.gameInstance.tutorialSystem) {
+                window.gameInstance.tutorialSystem.resetTutorial();
+            }
 
             // 4. Инициализируем базовые системы (без зависимостей)
             this.pokemonManager = new PokemonManager();
@@ -148,7 +155,7 @@ class PokemonClickerGame {
             
             // 11. Запускаем таймеры
             this.startEnergyRestore();
-            this.startAutoSave();
+//AUTO SAVE            //this.startAutoSave();
             
             // 12. Инициализируем звуки
             if (typeof GameSoundGenerator !== 'undefined') {
@@ -298,13 +305,29 @@ class PokemonClickerGame {
         console.log('Ручная атака');
         
         if (this.tutorialSystem && this.tutorialSystem.isTutorialActive) {
-            this.showNotification('Заверши обучение сначала!', 'warning');
+            // Проверяем, ожидает ли туториал атаку
+            const step = this.tutorialSystem.steps[this.tutorialSystem.currentStep];
+            if (step && step.action === 'attack-enemy') {
+                console.log('⚔️ Атака разрешена для туториала');
+            } else {
+                this.showNotification('🎓 Следуй указаниям туториала!', 'warning');
+                return;
+            }
+        }
+        
+        // Проверяем, есть ли покемоны в команде
+        if (this.pokemonManager.team.length === 0) {
+            this.showNotification('Добавь покемонов в команду для атаки!', 'warning');
+            if (this.uiManager) {
+                this.uiManager.showModal('team');
+            }
             return;
         }
         
-        if (this.pokemonManager.team.length === 0) {
-            this.showNotification('Добавь покемонов в команду для атаки!', 'warning');
-            this.uiManager.showModal('team');
+        // Проверяем, есть ли энергия у покемонов
+        const hasEnergy = this.pokemonManager.team.some(p => p.energy > 0);
+        if (!hasEnergy) {
+            this.showNotification('У покемонов закончилась энергия! Подождите восстановления.', 'warning');
             return;
         }
         
@@ -316,11 +339,13 @@ class PokemonClickerGame {
             totalDamage = Math.floor(totalDamage * (1 + bonus));
         }
         
+        // Атакуем
         const result = this.battleSystem.attackEnemy();
         
         if (result.damage > 0) {
+            // Показываем анимацию урона
             const enemyCard = document.querySelector('.enemy-card');
-            if (enemyCard) {
+            if (enemyCard && this.animationManager) {
                 const rect = enemyCard.getBoundingClientRect();
                 const x = rect.left + rect.width / 2;
                 const y = rect.top + rect.height / 2;
@@ -357,7 +382,7 @@ class PokemonClickerGame {
                 GameSoundGenerator.playVictory();
             }
             
-            if (result.enemy) {
+            if (result.enemy && this.animationManager) {
                 this.animationManager.animateEnemyChange(
                     result.enemy,
                     this.battleSystem.currentEnemy

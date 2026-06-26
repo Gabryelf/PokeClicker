@@ -1,5 +1,5 @@
 // ==============================
-// МЕНЕДЖЕР ИНТЕРФЕЙСА С ПОДДЕРЖКОЙ СЛИЯНИЯ
+// МЕНЕДЖЕР ИНТЕРФЕЙСА С ПОДДЕРЖКОЙ СЛИЯНИЯ И СБРОСА ТУТОРИАЛА
 // ==============================
 
 class UIManager {
@@ -14,6 +14,7 @@ class UIManager {
         
         this.initModals();
         this.createMergeModal();
+        this.addTutorialResetButton();
         
         // Не сразу устанавливаем обработчики, ждем загрузки DOM
         setTimeout(() => {
@@ -22,6 +23,237 @@ class UIManager {
             this.setupTeamSlotClickHandlers();
             this.initEventListeners();
         }, 1000);
+    }
+    
+    // НОВЫЙ МЕТОД: Добавляет кнопку сброса туториала в коллекцию
+    addTutorialResetButton() {
+        // Ждем, пока модальное окно коллекции будет создано
+        const collectionModal = document.getElementById('collection-modal');
+        if (!collectionModal) {
+            console.warn('Модальное окно коллекции не найдено');
+            return;
+        }
+        
+        // Ищем хедер
+        const header = collectionModal.querySelector('.modal-header');
+        if (!header) {
+            console.warn('Хедер модального окна не найден');
+            return;
+        }
+        
+        // Проверяем, есть ли уже кнопка
+        if (header.querySelector('.tutorial-reset-btn')) {
+            return;
+        }
+        
+        // Создаем кнопку
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'tutorial-reset-btn';
+        resetBtn.innerHTML = `
+            <i class="fas fa-graduation-cap"></i>
+            <span>Обучение</span>
+        `;
+        resetBtn.title = 'Пройти обучение заново';
+        resetBtn.style.cssText = `
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            border: none;
+            border-radius: 100px;
+            padding: 6px 16px;
+            color: #1a1a2e;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+            box-shadow: 0 2px 10px rgba(247, 151, 30, 0.3);
+            flex-shrink: 0;
+        `;
+        
+        // Стили при наведении
+        resetBtn.addEventListener('mouseenter', () => {
+            resetBtn.style.transform = 'scale(1.05)';
+            resetBtn.style.boxShadow = '0 4px 20px rgba(247, 151, 30, 0.5)';
+        });
+        
+        resetBtn.addEventListener('mouseleave', () => {
+            resetBtn.style.transform = 'scale(1)';
+            resetBtn.style.boxShadow = '0 2px 10px rgba(247, 151, 30, 0.3)';
+        });
+        
+        // Обработчик клика
+        resetBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.showTutorialResetConfirmation();
+        });
+        
+        // Вставляем кнопку в хедер
+        header.appendChild(resetBtn);
+        console.log('✅ Кнопка сброса туториала добавлена');
+    }
+    
+    // НОВЫЙ МЕТОД: Показывает диалог подтверждения сброса туториала
+    showTutorialResetConfirmation() {
+        // Создаем оверлей
+        const overlay = document.createElement('div');
+        overlay.className = 'confirmation-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease;
+        `;
+        
+        // Создаем диалог
+        const dialog = document.createElement('div');
+        dialog.className = 'confirmation-dialog';
+        dialog.style.cssText = `
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #f7971e;
+            border-radius: 20px;
+            padding: 35px 30px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+            animation: scaleIn 0.3s ease;
+        `;
+        
+        dialog.innerHTML = `
+            <div style="font-size: 3.5rem; margin-bottom: 15px;">
+                🎓
+            </div>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 1.3rem;">
+                Пройти обучение заново?
+            </h3>
+            <p style="color: #aaa; margin-bottom: 25px; line-height: 1.6; font-size: 0.95rem;">
+                Вы сможете заново пройти все шаги туториала.<br>
+                Это <strong style="color: #4CAF50;">не повлияет</strong> на ваш прогресс в игре.
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <button class="confirmation-btn cancel-btn" style="
+                    background: rgba(255, 255, 255, 0.1);
+                    color: #fff;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    padding: 10px 30px;
+                    border-radius: 100px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    font-size: 0.95rem;
+                ">
+                    Отмена
+                </button>
+                <button class="confirmation-btn confirm-btn" style="
+                    background: linear-gradient(135deg, #f7971e, #ffd200);
+                    color: #1a1a2e;
+                    border: none;
+                    padding: 10px 30px;
+                    border-radius: 100px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    font-size: 0.95rem;
+                    box-shadow: 0 4px 15px rgba(247, 151, 30, 0.3);
+                ">
+                    Начать обучение
+                </button>
+            </div>
+        `;
+        
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+        
+        // Обработчики кнопок
+        const cancelBtn = dialog.querySelector('.cancel-btn');
+        const confirmBtn = dialog.querySelector('.confirm-btn');
+        
+        cancelBtn.addEventListener('click', () => {
+            overlay.remove();
+        });
+        
+        cancelBtn.addEventListener('mouseenter', () => {
+            cancelBtn.style.transform = 'scale(1.05)';
+            cancelBtn.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+        });
+        
+        cancelBtn.addEventListener('mouseleave', () => {
+            cancelBtn.style.transform = 'scale(1)';
+            cancelBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        });
+        
+        confirmBtn.addEventListener('click', () => {
+            // Закрываем все модальные окна
+            this.closeAllModals();
+            
+            // Удаляем оверлей
+            overlay.remove();
+            
+            // Сбрасываем туториал
+            if (this.game && this.game.tutorialSystem) {
+                this.game.tutorialSystem.resetTutorial();
+                this.game.showNotification('🔄 Обучение перезапущено!', 'success');
+            } else {
+                // Если туториал не инициализирован, создаем новый
+                localStorage.removeItem('pokemon_tutorial_completed');
+                this.game.showNotification('🔄 Перезагрузка для запуска обучения...', 'info');
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
+        });
+        
+        confirmBtn.addEventListener('mouseenter', () => {
+            confirmBtn.style.transform = 'scale(1.05)';
+            confirmBtn.style.boxShadow = '0 6px 25px rgba(247, 151, 30, 0.5)';
+        });
+        
+        confirmBtn.addEventListener('mouseleave', () => {
+            confirmBtn.style.transform = 'scale(1)';
+            confirmBtn.style.boxShadow = '0 4px 15px rgba(247, 151, 30, 0.3)';
+        });
+        
+        // Закрытие по клику на оверлей
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+            }
+        });
+        
+        // Закрытие по Escape
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                overlay.remove();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
+    
+    // НОВЫЙ МЕТОД: Закрывает все модальные окна
+    closeAllModals() {
+        Object.values(this.modals).forEach(modal => {
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+        });
+        
+        // Также закрываем карту, если она открыта
+        const mapModal = document.getElementById('map-modal');
+        if (mapModal) {
+            mapModal.style.display = 'none';
+        }
     }
     
     initModals() {
@@ -80,6 +312,10 @@ class UIManager {
                 e.stopPropagation();
                 console.log('Клик по кнопке коллекции');
                 this.showModal('collection');
+                // Добавляем кнопку сброса каждый раз при открытии коллекции
+                setTimeout(() => {
+                    this.addTutorialResetButton();
+                }, 100);
             });
         } else {
             console.error('Кнопка коллекции не найдена');
@@ -167,11 +403,22 @@ class UIManager {
             teamSlots.addEventListener('click', this.teamSlotClickHandler);
         }
     }
-    
+
     handlePokeballClick(type) {
-        // Предотвращаем множественные клики
+        // Проверяем, не блокирует ли туториал клики
+        if (this.game.tutorialSystem && this.game.tutorialSystem.isTutorialActive) {
+            const step = this.game.tutorialSystem.steps[this.game.tutorialSystem.currentStep];
+            if (step && step.action === 'click-pokeball') {
+                // Разрешаем клик для туториала
+                console.log('🎯 Клик по покеболу разрешен для туториала');
+            } else {
+                // Показываем подсказку, но не блокируем полностью
+                this.game.showNotification('🎓 Следуй указаниям туториала!', 'info');
+                return;
+            }
+        }
+        
         if (this.isProcessingPokeball) {
-            console.log('⏳ Уже обрабатывается открытие покебола');
             return;
         }
         
@@ -179,10 +426,9 @@ class UIManager {
         
         if (count > 0) {
             this.isProcessingPokeball = true;
-            this.hasShownEmptyPokeballNotification = false; // Сбрасываем флаг при успешном открытии
+            this.hasShownEmptyPokeballNotification = false;
             this.openPokeballWithAnimation(type);
         } else {
-            // Показываем уведомление только если оно еще не было показано в этой сессии кликов
             if (!this.hasShownEmptyPokeballNotification) {
                 this.game.showNotification('Купите покеболы в магазине!', 'warning');
                 this.hasShownEmptyPokeballNotification = true;
@@ -193,12 +439,10 @@ class UIManager {
     
     async openPokeballWithAnimation(type) {
         try {
-            // Создаем черный оверлей
             const overlay = document.createElement('div');
             overlay.className = 'pokeball-open-overlay';
             document.body.appendChild(overlay);
             
-            // Создаем анимацию покебола
             const animContainer = document.createElement('div');
             animContainer.className = 'pokeball-open-animation';
             
@@ -208,30 +452,22 @@ class UIManager {
             animContainer.appendChild(img);
             overlay.appendChild(animContainer);
             
-            // Ждем анимацию открытия
             await new Promise(resolve => setTimeout(resolve, 800));
             
-            // Удаляем анимацию покебола
             overlay.remove();
             
-            // Открываем покебол и получаем покемона
             const pokemon = this.game.shopSystem.openPokeball(type);
             
             if (pokemon) {
-                // Показываем полученного покемона на черном фоне
                 await this.showRevealedPokemon(pokemon);
-                
-                // Обновляем UI
                 await this.updateUI();
                 this.game.saveGame();
                 
-                // Воспроизводим звук
                 if (typeof GameSoundGenerator !== 'undefined') {
                     GameSoundGenerator.playPokemonCry();
                 }
             }
             
-            // Сбрасываем флаг
             this.isProcessingPokeball = false;
             
         } catch (e) {
@@ -242,7 +478,6 @@ class UIManager {
     
     async showRevealedPokemon(pokemon) {
         return new Promise(async (resolve) => {
-            // Создаем черный оверлей для показа покемона
             const overlay = document.createElement('div');
             overlay.className = 'pokemon-reveal-overlay';
             
@@ -255,7 +490,6 @@ class UIManager {
                 img.src = pokemonImg.src;
                 revealContainer.appendChild(img);
                 
-                // Добавляем имя покемона
                 const nameDiv = document.createElement('div');
                 nameDiv.className = 'pokemon-name-reveal';
                 nameDiv.textContent = pokemon.name;
@@ -264,10 +498,8 @@ class UIManager {
                 overlay.appendChild(revealContainer);
                 document.body.appendChild(overlay);
                 
-                // Показываем уведомление
                 this.game.showNotification(`Вы получили ${pokemon.name}!`, 'success');
                 
-                // Удаляем через 2 секунды
                 setTimeout(() => {
                     overlay.remove();
                     resolve();
@@ -281,17 +513,13 @@ class UIManager {
         });
     }
     
-    // В классе UIManager найдите и исправьте метод showMergeAnimation:
-
     showMergeAnimation(mergeData) {
         console.log('Показ анимации слияния', mergeData);
         
         const modal = document.getElementById('merge-modal');
         if (!modal) {
             console.error('Модальное окно слияния не найдено!');
-            // Создаем его, если не существует
             this.createMergeModal();
-            // Пробуем снова через небольшую задержку
             setTimeout(() => {
                 this.showMergeAnimation(mergeData);
             }, 100);
@@ -320,30 +548,24 @@ class UIManager {
             mergeCount.textContent = mergeData.mergeCount;
         }
         
-        // Загружаем изображения
         this.loadPokemonImage(modal.querySelector('.original'), pokemon.id);
         this.loadPokemonImage(modal.querySelector('.duplicate'), pokemon.id);
         this.loadPokemonImage(modal.querySelector('.result'), pokemon.id);
         
-        // Показываем модальное окно
         modal.style.display = 'flex';
         
-        // Анимация появления элементов
         const elements = modal.querySelectorAll('.merge-pokemon, .merge-plus, .merge-equals');
         elements.forEach((el, i) => {
             el.style.animation = 'none';
-            // Форсируем перерисовку
             el.offsetHeight;
             el.style.animation = `mergeAppear 0.5s ease forwards ${i * 0.1}s`;
         });
         
-        // Автоматически скрываем через 3 секунды
         setTimeout(() => {
             modal.style.display = 'none';
         }, 6000);
     }
     
-    // Улучшим метод createMergeModal для гарантии создания
     createMergeModal() {
         if (document.getElementById('merge-modal')) {
             console.log('Модальное окно слияния уже существует');
@@ -406,12 +628,10 @@ class UIManager {
             }
         });
         
-        // Добавляем стили для анимации, если их нет
         this.addMergeStyles();
     }
     
     addMergeStyles() {
-        // Проверяем, есть ли уже стили
         if (document.getElementById('merge-styles')) return;
         
         const style = document.createElement('style');
@@ -520,6 +740,10 @@ class UIManager {
             switch(modalName) {
                 case 'collection':
                     this.createCollectionUI();
+                    // Добавляем кнопку сброса каждый раз при открытии коллекции
+                    setTimeout(() => {
+                        this.addTutorialResetButton();
+                    }, 100);
                     break;
                 case 'shop':
                     if (this.game.shopSystem) {
@@ -560,10 +784,8 @@ class UIManager {
             }
         }
         
-        // Обновляем аватар
         await this.updateAvatar();
         
-        // Обновляем название локации
         if (this.game.locationSystem) {
             const locationNameEl = document.getElementById('current-location-name');
             if (locationNameEl) {
@@ -572,15 +794,14 @@ class UIManager {
             }
         }
         
-        // Обновляем бонус героя
         const heroBonusEl = document.getElementById('hero-bonus-text');
         if (heroBonusEl && this.game.heroSystem) {
             const bonus = this.game.heroSystem.getHeroBonus();
             heroBonusEl.textContent = `+${bonus}%`;
         }
         
-        // Обновляем обработчики покеболов
         this.setupPokeballClickHandlers();
+        this.setupTeamSlotClickHandlers();
     }
 
     async createShopUI() {
@@ -599,7 +820,6 @@ class UIManager {
             const itemElement = document.createElement('div');
             itemElement.className = 'shop-item';
             
-            // Создаем изображение
             const img = document.createElement('img');
             img.className = 'shop-item-image';
             img.alt = item.name;
@@ -611,7 +831,6 @@ class UIManager {
                 img.src = pokeballImg.src;
             } catch (e) {
                 console.error(`❌ Ошибка загрузки изображения для ${item.name}:`, e);
-                // Запасной вариант
                 img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
             }
             
@@ -632,12 +851,10 @@ class UIManager {
             shopContainer.appendChild(itemElement);
         }
         
-        // Добавляем обработчики
         shopContainer.querySelectorAll('.buy-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const ballType = e.target.dataset.type;
                 this.game.shopSystem.buyPokeball(ballType);
-                // Обновляем магазин после покупки
                 this.createShopUI();
             });
         });
@@ -657,7 +874,7 @@ class UIManager {
             }
         });
     }
-    
+
     async createCollectionUI() {
         const collectionGrid = document.getElementById('collection-grid');
         if (!collectionGrid) return;
@@ -671,21 +888,24 @@ class UIManager {
             return;
         }
         
+        // Сортируем по уровню (по убыванию)
         collection.sort((a, b) => b.level - a.level || a.name.localeCompare(b.name));
         
         for (const pokemon of collection) {
-            const card = await this.createPokemonCard(pokemon);
+            const card = await this.createPokemonCardWithButton(pokemon);
             collectionGrid.appendChild(card);
         }
     }
-    
-    async createPokemonCard(pokemon) {
+
+
+    async createPokemonCardWithButton(pokemon) {
         const card = document.createElement('div');
         card.className = 'pokemon-card';
         card.dataset.id = pokemon.id;
         
         const rarity = GAME_CONFIG.RARITIES[pokemon.rarity];
         const energyPercent = (pokemon.energy / pokemon.maxEnergy) * 100;
+        const isInTeam = this.game.pokemonManager.team.some(p => p.id === pokemon.id);
         
         // Создаем изображение
         const img = document.createElement('img');
@@ -699,7 +919,156 @@ class UIManager {
             img.src = pokemonImg.src;
         } catch (e) {
             console.error(`❌ Ошибка загрузки изображения для ${pokemon.name}:`, e);
-            // Запасной вариант
+            img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
+        }
+        
+        // Создаем HTML карточки
+        card.innerHTML = `
+            <div class="pokemon-image-container">
+                <img src="${img.src}" alt="${pokemon.name}" class="pokemon-image" width="100" height="100">
+            </div>
+            <h4>${pokemon.name}</h4>
+            <div class="pokemon-rarity" style="color: ${rarity.color}; border-color: ${rarity.color}">
+                ${rarity.name}
+            </div>
+            <div class="pokemon-stats">
+                <div>Уровень: ${pokemon.level}</div>
+                <div>Урон: ${Math.floor(pokemon.currentDamage)}</div>
+                <div>Энергия: ${Math.floor(energyPercent)}%</div>
+                <div>Слияний: ${pokemon.mergeCount || 0}</div>
+            </div>
+            <div class="pokemon-card-actions">
+                ${isInTeam ? 
+                    `<button class="remove-from-team-btn" data-id="${pokemon.id}" style="
+                        background: #f44336;
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                        width: 100%;
+                    ">❌ Убрать из команды</button>` :
+                    `<button class="add-to-team-btn" data-id="${pokemon.id}" style="
+                        background: linear-gradient(135deg, #4CAF50, #45a049);
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                        width: 100%;
+                    ">➕ В команду</button>`
+                }
+            </div>
+            ${isInTeam ? '<div class="in-team-badge" style="background: #4CAF50; color: white; padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; margin-top: 8px; display: inline-block;">✅ В команде</div>' : ''}
+        `;
+        
+        // Добавляем обработчики
+        const addBtn = card.querySelector('.add-to-team-btn');
+        if (addBtn) {
+            addBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = parseInt(addBtn.dataset.id);
+                const result = this.game.addToTeam(id);
+                if (result.success) {
+                    this.createCollectionUI();
+                    this.updateUI();
+                }
+            });
+        }
+        
+        const removeBtn = card.querySelector('.remove-from-team-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = parseInt(removeBtn.dataset.id);
+                this.game.removeFromTeam(id);
+                this.createCollectionUI();
+                this.updateUI();
+            });
+        }
+        
+        return card;
+    }
+
+
+    async updateTeamDisplay() {
+        const teamSlots = document.getElementById('team-slots');
+        if (!teamSlots) return;
+        
+        teamSlots.innerHTML = '';
+        const team = this.game.pokemonManager.team;
+        const maxTeamSize = this.game.pokemonManager.maxTeamSize || 3;
+        
+        // Показываем покемонов в команде
+        for (let i = 0; i < Math.min(team.length, maxTeamSize); i++) {
+            const pokemon = team[i];
+            const slot = document.createElement('div');
+            slot.className = 'team-slot occupied';
+            slot.dataset.id = pokemon.id;
+            slot.style.setProperty('--i', Math.random() * 2);
+            
+            // Загружаем изображение
+            let imgHtml = '';
+            try {
+                const pokemonImg = await this.imageManager.getPokemonImage(pokemon.id);
+                imgHtml = `<img src="${pokemonImg.src}" alt="${pokemon.name}" class="team-pokemon-image" width="50" height="50">`;
+            } catch (e) {
+                imgHtml = `<div class="team-pokemon-placeholder">?</div>`;
+            }
+            
+            const energyPercent = (pokemon.energy / pokemon.maxEnergy) * 100;
+            
+            slot.innerHTML = `
+                ${imgHtml}
+                <div class="pokemon-info">
+                    <span class="pokemon-name">${pokemon.name}</span>
+                    <span class="pokemon-level">Lv.${pokemon.level}</span>
+                </div>
+                <div class="energy-bar" style="--energy-width: ${energyPercent}%"></div>
+            `;
+            
+            teamSlots.appendChild(slot);
+        }
+        
+        // Показываем пустые слоты
+        for (let i = team.length; i < maxTeamSize; i++) {
+            const emptySlot = document.createElement('div');
+            emptySlot.className = 'team-slot empty';
+            emptySlot.dataset.empty = 'true';
+            emptySlot.innerHTML = `
+                <i class="fas fa-plus"></i>
+                <span>Пусто</span>
+            `;
+            teamSlots.appendChild(emptySlot);
+        }
+        
+        // Добавляем обработчик клика для открытия управления командой
+        this.setupTeamSlotClickHandlers();
+    }
+    
+    async createPokemonCard(pokemon) {
+        const card = document.createElement('div');
+        card.className = 'pokemon-card';
+        card.dataset.id = pokemon.id;
+        
+        const rarity = GAME_CONFIG.RARITIES[pokemon.rarity];
+        const energyPercent = (pokemon.energy / pokemon.maxEnergy) * 100;
+        
+        const img = document.createElement('img');
+        img.className = 'pokemon-image';
+        img.alt = pokemon.name;
+        img.width = 100;
+        img.height = 100;
+        
+        try {
+            const pokemonImg = await this.imageManager.getPokemonImage(pokemon.id);
+            img.src = pokemonImg.src;
+        } catch (e) {
+            console.error(`❌ Ошибка загрузки изображения для ${pokemon.name}:`, e);
             img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
         }
         
@@ -737,7 +1106,6 @@ class UIManager {
             return;
         }
         
-        // Текущая команда
         const teamSection = document.createElement('div');
         teamSection.className = 'current-team';
         teamSection.innerHTML = '<h3><i class="fas fa-users"></i> Текущая команда</h3>';
@@ -760,7 +1128,6 @@ class UIManager {
         teamSection.appendChild(teamSlots);
         teamSelection.appendChild(teamSection);
         
-        // Показываем общий урон команды
         const totalDamage = this.game.pokemonManager.getTeamDamage();
         const damageDiv = document.createElement('div');
         damageDiv.className = 'team-damage';
@@ -770,7 +1137,6 @@ class UIManager {
         `;
         teamSelection.appendChild(damageDiv);
         
-        // Доступные покемоны
         const availableSection = document.createElement('div');
         availableSection.className = 'available-pokemon';
         availableSection.innerHTML = '<h3><i class="fas fa-dragon"></i> Доступные покемоны</h3>';
@@ -901,7 +1267,6 @@ class UIManager {
         teamSlots.innerHTML = '';
         const team = this.game.pokemonManager.team;
         
-        // Заполняем слоты команды
         for (const pokemon of team) {
             const slot = document.createElement('div');
             slot.className = 'team-slot';
@@ -933,7 +1298,6 @@ class UIManager {
             teamSlots.appendChild(slot);
         }
         
-        // Заполняем пустые слоты - теперь они кликабельны
         for (let i = team.length; i < this.game.pokemonManager.maxTeamSize; i++) {
             const emptySlot = document.createElement('div');
             emptySlot.className = 'team-slot empty';
@@ -942,7 +1306,6 @@ class UIManager {
             teamSlots.appendChild(emptySlot);
         }
         
-        // Обновляем обработчики для пустых слотов
         this.setupTeamSlotClickHandlers();
     }
     
@@ -975,7 +1338,6 @@ class UIManager {
         return symbols[type] || '❓';
     }
 
-
     async updateAvatar() {
         const avatarCircle = document.getElementById('avatar-circle');
         const avatarImage = document.getElementById('avatar-image');
@@ -993,14 +1355,12 @@ class UIManager {
         avatarName.textContent = hero.name;
         avatarLevel.textContent = heroSystem.heroLevel;
         
-        // Загружаем изображение героя
         try {
             avatarImage.src = hero.image;
         } catch (e) {
             console.error('Ошибка загрузки изображения героя:', e);
         }
         
-        // Добавляем обработчик клика на аватар
         avatarCircle.addEventListener('click', () => this.showHeroModal());
     }
     
@@ -1060,7 +1420,6 @@ class UIManager {
             </div>
         `;
         
-        // Добавляем обработчики для выбора героя
         container.querySelectorAll('.select-hero-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1073,7 +1432,6 @@ class UIManager {
             });
         });
         
-        // Добавляем обработчик для кнопки дерева улучшений
         const upgradesBtn = document.getElementById('show-upgrades-btn');
         if (upgradesBtn) {
             upgradesBtn.addEventListener('click', (e) => {
@@ -1104,7 +1462,6 @@ class UIManager {
         
         let html = '<div class="upgrade-tree">';
         
-        // Группируем по уровням
         for (let tier = 1; tier <= heroSystem.heroLevel; tier++) {
             const tierUpgrades = hero.upgrades[tier] || [];
             if (tierUpgrades.length === 0) continue;
@@ -1149,7 +1506,6 @@ class UIManager {
         html += '</div>';
         container.innerHTML = html;
         
-        // Добавляем обработчики для доступных улучшений
         container.querySelectorAll('.upgrade-item.available').forEach(item => {
             item.addEventListener('click', () => {
                 const upgradeId = item.dataset.upgradeId;
@@ -1159,141 +1515,57 @@ class UIManager {
             });
         });
     }
-    
-    // В классе UIManager найдите и исправьте метод updateUI:
-
-    async updateUI() {
-        console.log('Обновление UI');
-        
-        await this.updateTeamDisplay();
-        
-        if (this.game.battleSystem) {
-            this.game.battleSystem.updateUI();
-        }
-        
-        if (this.game.shopSystem) {
-            this.game.shopSystem.updateMoneyDisplay();
-            this.game.shopSystem.updatePokeballsDisplay();
-        }
-        
-        const team = this.game.pokemonManager.team;
-        if (team.length > 0) {
-            const maxLevel = Math.max(...team.map(p => p.level));
-            const playerLevelEl = document.getElementById('player-level');
-            if (playerLevelEl) {
-                playerLevelEl.textContent = maxLevel;
-            }
-        }
-        
-        // Обновляем аватар
-        await this.updateAvatar();
-        
-        // Обновляем название локации
-        if (this.game.locationSystem) {
-            const locationNameEl = document.getElementById('current-location-name');
-            if (locationNameEl) {
-                const location = this.game.locationSystem.locations[this.game.locationSystem.currentLocation];
-                locationNameEl.textContent = location ? location.name : 'Паллет Таун';
-            }
-        }
-        
-        // Обновляем бонус героя
-        const heroBonusEl = document.getElementById('hero-bonus-text');
-        if (heroBonusEl && this.game.heroSystem) {
-            const bonus = this.game.heroSystem.getHeroBonus();
-            heroBonusEl.textContent = `+${bonus}%`;
-        }
-        
-        // Обновляем обработчики покеболов
-        this.setupPokeballClickHandlers();
-        
-        // Обновляем обработчики слотов команды
-        this.setupTeamSlotClickHandlers();
-    }
 }
 
-// Добавляем стили для анимации слияния
-const mergeStyles = document.createElement('style');
-mergeStyles.textContent = `
-    .merge-modal .modal-content {
-        max-width: 500px;
+// Добавляем стили для анимаций
+const uiStyles = document.createElement('style');
+uiStyles.textContent = `
+    .tutorial-reset-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 20px rgba(247, 151, 30, 0.5);
     }
     
-    .merge-animation {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-        margin: 30px 0;
-    }
-    
-    .merge-pokemon {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.1);
-        border: 2px solid var(--accent-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-    
-    .merge-pokemon img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
-    
-    .merge-plus, .merge-equals {
-        font-size: 2rem;
-        color: var(--text-secondary);
-        font-weight: bold;
-    }
-    
-    .merge-details {
-        text-align: center;
-    }
-    
-    .merge-name {
-        font-size: 1.5rem;
-        margin-bottom: 20px;
-        color: var(--accent-warning);
-    }
-    
-    .merge-stats {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-    }
-    
-    .stat {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-    
-    .stat span:first-child {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-    }
-    
-    .stat .increase {
-        color: var(--accent-success);
-        font-weight: bold;
-    }
-    
-    @keyframes mergeAppear {
+    @keyframes fadeIn {
         from {
             opacity: 0;
-            transform: scale(0.5) rotate(-180deg);
         }
         to {
             opacity: 1;
-            transform: scale(1) rotate(0);
         }
     }
+    
+    @keyframes scaleIn {
+        from {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .confirmation-btn:hover {
+        transform: scale(1.05);
+    }
+    
+    .modal-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .modal-header h2 {
+        flex-shrink: 0;
+    }
+    
+    .modal-header .close {
+        margin-left: auto;
+        flex-shrink: 0;
+    }
 `;
-document.head.appendChild(mergeStyles);
+
+document.head.appendChild(uiStyles);
 
 window.UIManager = UIManager;

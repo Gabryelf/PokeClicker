@@ -594,6 +594,35 @@
         font-size: 0.6rem;
     }
 }
+
+/* Добавьте в style.css */
+.pokemon-card-actions {
+    margin-top: 10px;
+    width: 100%;
+}
+
+.add-to-team-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.remove-from-team-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+}
+
+.in-team-badge {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
    
    /* ==============================
       MAIN (Боевая зона)
