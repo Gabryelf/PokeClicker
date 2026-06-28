@@ -1,5 +1,5 @@
 // ==============================
-// ТУТОРИАЛ В УГЛУ ЭКРАНА - С ОТСЛЕЖИВАНИЕМ АТАКИ
+// ТУТОРИАЛ В УГЛУ ЭКРАНА - ПОЛНАЯ ВЕРСИЯ
 // ==============================
 
 class TutorialSystem {
@@ -15,6 +15,7 @@ class TutorialSystem {
         this.checkInterval = null;
         this.attackCheckInterval = null;
         this.lastEnemyHp = null;
+        this.lastLocation = null;
         
         this.steps = [
             {
@@ -78,7 +79,7 @@ class TutorialSystem {
                 action: 'travel-to-location',
                 target: '.location-node.available',
                 hint: 'Доступная локация',
-                check: null,
+                check: 'location-changed',
                 showButton: false
             },
             {
@@ -112,6 +113,7 @@ class TutorialSystem {
         console.log('📖 Запуск туториала');
         this.isTutorialActive = true;
         this.currentStep = 0;
+        this.lastLocation = null;
         
         this.modal.style.cssText = `
             display: flex !important;
@@ -284,6 +286,9 @@ class TutorialSystem {
             if (step.check === 'map-opened') {
                 this.checkMapOpened();
             }
+            if (step.check === 'location-changed') {
+                this.checkLocationChanged();
+            }
         } else if (!step.action && !step.showButton) {
             this.stepTimeout = setTimeout(() => {
                 this.goToNextStep();
@@ -372,7 +377,6 @@ class TutorialSystem {
             
             const currentHp = enemy.hp;
             
-            // Если HP изменилось (уменьшилось) - значит атака была
             if (this.lastEnemyHp !== null && currentHp < this.lastEnemyHp) {
                 console.log('✅ Атака выполнена! HP уменьшилось с', this.lastEnemyHp, 'до', currentHp);
                 clearInterval(this.attackCheckInterval);
@@ -412,6 +416,41 @@ class TutorialSystem {
                     this.goToNextStep();
                 }, 500);
             }
+        }, 500);
+    }
+    
+    checkLocationChanged() {
+        console.log('🔍 Проверка изменения локации...');
+        this.lastLocation = null;
+        
+        // Сохраняем текущую локацию
+        if (this.game && this.game.locationSystem) {
+            this.lastLocation = this.game.locationSystem.currentLocation;
+        }
+        
+        this.checkInterval = setInterval(() => {
+            if (!this.game || !this.game.locationSystem) return;
+            
+            const currentLocation = this.game.locationSystem.currentLocation;
+            
+            // Если локация изменилась
+            if (this.lastLocation !== null && currentLocation !== this.lastLocation) {
+                console.log('✅ Локация изменена! Было:', this.lastLocation, 'Стало:', currentLocation);
+                clearInterval(this.checkInterval);
+                this.checkInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
+                }, 500);
+            }
+            
+            this.lastLocation = currentLocation;
         }, 500);
     }
     
@@ -510,7 +549,6 @@ class TutorialSystem {
                     target = e.target.closest('.enemy-card');
                     if (target) {
                         console.log('🔄 Клик по врагу, ждем атаки...');
-                        // Не завершаем шаг сразу, ждем проверки attack-done
                         return;
                     }
                     break;
@@ -523,6 +561,10 @@ class TutorialSystem {
                     break;
                 case 'travel-to-location':
                     target = e.target.closest('.location-node.available, .location-node');
+                    if (target) {
+                        console.log('🔄 Клик по локации, ждем изменения...');
+                        return;
+                    }
                     break;
                 default:
                     return;
@@ -635,6 +677,7 @@ class TutorialSystem {
         this.waitingForAction = false;
         this.actionCompleted = false;
         this.lastEnemyHp = null;
+        this.lastLocation = null;
         
         this.modal.style.cssText = `
             display: flex !important;
