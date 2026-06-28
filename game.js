@@ -105,7 +105,7 @@ class PokemonClickerGame {
 
             // 3. Загружаем сохранение
             this.saveManager = new SaveManager();
-            this.saveManager.clear();
+            //this.saveManager.clear();
             // Для сброса туториала - выполните в консоли браузера
             localStorage.removeItem('pokemon_tutorial_completed');
             
@@ -155,7 +155,7 @@ class PokemonClickerGame {
             
             // 11. Запускаем таймеры
             this.startEnergyRestore();
-//AUTO SAVE            //this.startAutoSave();
+            this.startAutoSave();
             
             // 12. Инициализируем звуки
             if (typeof GameSoundGenerator !== 'undefined') {
