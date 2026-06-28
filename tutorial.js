@@ -1,462 +1,740 @@
 // ==============================
-// УЛУЧШЕННЫЙ ТУТОРИАЛ С ПРАКТИЧЕСКИМИ ЗАДАНИЯМИ
+// ТУТОРИАЛ В УГЛУ ЭКРАНА - С ОТСЛЕЖИВАНИЕМ АТАКИ
 // ==============================
 
 class TutorialSystem {
     constructor(game) {
         this.game = game;
-        this.currentStep = 1;
-        this.isTutorialActive = true;
+        this.currentStep = 0;
+        this.isTutorialActive = false;
         this.modal = document.getElementById('tutorial');
-        this.highlightedElements = [];
-        this.waitingForAction = false;
-        this.actionCompleted = false;
+        this.pointerElement = null;
+        this.highlightOverlay = null;
+        this.actionHandler = null;
+        this.stepTimeout = null;
+        this.checkInterval = null;
+        this.attackCheckInterval = null;
+        this.lastEnemyHp = null;
         
-        this.steps = {
-            1: { 
-                id: 'step-1', 
-                next: 2,
-                message: 'Привет, тренер! Добро пожаловать в мир покемонов! Сейчас я научу тебя основам игры.',
-                action: null,
-                highlight: null
+        this.steps = [
+            {
+                message: '👋 Привет! Нажми "Начать", чтобы начать обучение',
+                action: 'start',
+                target: null,
+                hint: null,
+                check: null,
+                showButton: true
             },
-            2: { 
-                id: 'step-2', 
-                next: 3,
-                message: 'Вот твой первый покебол! Кликни на него, чтобы получить своего первого покемона.',
+            {
+                message: '🎯 Кликни на <b style="color:#ff6b6b;">красный покебол</b> вверху',
                 action: 'click-pokeball',
-                highlight: '.pokeball-item[data-type="NORMAL"]',
-                highlightText: 'Кликни сюда!'
+                target: '.pokeball-item[data-type="NORMAL"]',
+                hint: 'Красный покебол',
+                check: 'pokemon-received',
+                showButton: false
             },
-            3: { 
-                id: 'step-3', 
-                next: 4,
-                message: 'Отлично! Ты получил покемона. Теперь давай посмотрим на твою коллекцию.',
+            {
+                message: '✨ Открой <b style="color:#f7971e;">коллекцию</b> (иконка дракона)',
                 action: 'open-collection',
-                highlight: '#collection-menu',
-                highlightText: 'Открой коллекцию'
+                target: '#collection-menu',
+                hint: 'Кнопка коллекции',
+                check: 'collection-opened',
+                showButton: false
             },
-            4: { 
-                id: 'step-4', 
-                next: 5,
-                message: 'В коллекции ты можешь увидеть всех своих покемонов. А теперь добавь его в команду!',
+            {
+                message: '📦 Нажми <b style="color:#4CAF50;">"В команду"</b> под покемоном',
                 action: 'add-to-team',
-                highlight: '.pokemon-card.selectable .add-to-team-btn',
-                highlightText: 'Добавь в команду'
+                target: '.add-to-team-btn',
+                hint: 'Кнопка "В команду"',
+                check: 'pokemon-in-team',
+                showButton: false
             },
-            5: { 
-                id: 'step-5', 
-                next: 6,
-                message: 'Покемон в команде! Ты можешь увидеть его внизу экрана. Кликни на него, чтобы открыть управление командой.',
+            {
+                message: '✅ Кликни на <b style="color:#4CAF50;">покемона внизу</b>',
                 action: 'click-team-slot',
-                highlight: '.team-slot:not(.empty)',
-                highlightText: 'Кликни на покемона'
+                target: '.team-slot:not(.empty)',
+                hint: 'Слот покемона',
+                check: null,
+                showButton: false
             },
-            6: { 
-                id: 'step-6', 
-                next: 7,
-                message: 'Здесь ты можешь менять команду. А теперь попробуй атаковать дикого покемона!',
+            {
+                message: '⚔️ <b style="color:#ff6b6b;">Атакуй</b> врага! Кликни на него',
                 action: 'attack-enemy',
-                highlight: '.enemy-card',
-                highlightText: 'Атакуй!'
+                target: '.enemy-card',
+                hint: 'Карточка врага',
+                check: 'attack-done',
+                showButton: false
             },
-            7: { 
-                id: 'step-7', 
-                next: 8,
-                message: 'Отличная атака! После победы ты получаешь награду. А теперь давай посмотрим на карту.',
+            {
+                message: '💥 Открой <b style="color:#f7971e;">карту</b> (иконка карты)',
                 action: 'open-map',
-                highlight: '#map-menu',
-                highlightText: 'Открой карту'
+                target: '#map-menu',
+                hint: 'Кнопка карты',
+                check: 'map-opened',
+                showButton: false
             },
-            8: { 
-                id: 'step-8', 
-                next: 9,
-                message: 'Это карта региона Канто. Ты находишься в Паллет Тауне. Кликни на соседнюю локацию, чтобы отправиться в путешествие!',
+            {
+                message: '🗺️ Выбери <b style="color:#4CAF50;">любую локацию</b> на карте',
                 action: 'travel-to-location',
-                highlight: '.available-location',
-                highlightText: 'Выбери локацию'
+                target: '.location-node.available',
+                hint: 'Доступная локация',
+                check: null,
+                showButton: false
             },
-            9: { 
-                id: 'step-9', 
-                next: null,
-                message: 'Поздравляю! Ты освоил основы игры. Теперь исследуй мир, лови покемонов и становись лучшим тренером!',
+            {
+                message: '🎉 Поздравляю! Ты освоил основы!',
                 action: null,
-                highlight: null
+                target: null,
+                hint: null,
+                check: null,
+                showButton: true
             }
-        };
+        ];
         
-        // Проверяем наличие модального окна
         if (!this.modal) {
             console.error('❌ Модальное окно туториала не найдено');
             return;
         }
         
         this.init();
+        this.setupStyles();
     }
     
     init() {
-        // Проверяем, проходил ли уже туториал
         const completed = localStorage.getItem('pokemon_tutorial_completed');
-        if (completed) {
+        if (completed === 'true') {
             this.modal.style.display = 'none';
             this.isTutorialActive = false;
+            console.log('📖 Туториал уже пройден');
             return;
         }
         
-        // Показываем первый шаг
-        this.showStep(1);
-        this.setupEventListeners();
-    }
-    
-    showStep(stepNumber) {
-        // Скрываем все шаги
-        for (let i = 1; i <= 9; i++) {
-            const stepEl = document.getElementById(`step-${i}`);
-            if (stepEl) {
-                stepEl.classList.remove('active');
-            }
+        console.log('📖 Запуск туториала');
+        this.isTutorialActive = true;
+        this.currentStep = 0;
+        
+        this.modal.style.cssText = `
+            display: flex !important;
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            top: auto !important;
+            left: auto !important;
+            width: auto !important;
+            max-width: 350px !important;
+            background: none !important;
+            backdrop-filter: none !important;
+            z-index: 99999 !important;
+            pointer-events: none !important;
+            padding: 0 !important;
+        `;
+        
+        const content = this.modal.querySelector('.tutorial-content');
+        if (content) {
+            content.style.cssText = `
+                background: linear-gradient(135deg, #1a1a2e, #16213e);
+                border: 2px solid #f7971e;
+                border-radius: 16px;
+                padding: 16px 20px;
+                max-width: 350px;
+                width: 100%;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+                pointer-events: auto !important;
+                margin: 0;
+                position: relative;
+            `;
         }
         
-        // Показываем нужный шаг
-        const currentStep = document.getElementById(`step-${stepNumber}`);
-        if (currentStep) {
-            currentStep.classList.add('active');
+        const title = this.modal.querySelector('h2');
+        if (title) title.style.display = 'none';
+        
+        const closeBtn = this.modal.querySelector('.close');
+        if (closeBtn) closeBtn.style.display = 'none';
+        
+        this.showStep(0);
+    }
+    
+    showStep(index) {
+        console.log('📖 Показ шага:', index);
+        
+        if (this.stepTimeout) {
+            clearTimeout(this.stepTimeout);
+            this.stepTimeout = null;
+        }
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+            this.checkInterval = null;
+        }
+        if (this.attackCheckInterval) {
+            clearInterval(this.attackCheckInterval);
+            this.attackCheckInterval = null;
         }
         
-        this.currentStep = stepNumber;
-        const step = this.steps[stepNumber];
+        this.removePointer();
+        this.removeHighlightOverlay();
+        this.removeActionListeners();
         
-        // Убираем предыдущие выделения
-        this.clearHighlights();
+        const allSteps = this.modal.querySelectorAll('.tutorial-step');
+        allSteps.forEach(el => el.remove());
         
-        // Если есть элемент для выделения
-        if (step && step.highlight) {
-            this.highlightElement(step.highlight, step.highlightText);
-        }
-        
-        // Если шаг требует действия, ждем его
-        if (step && step.action) {
-            this.waitingForAction = true;
-            this.actionCompleted = false;
-            this.setupActionListener(step.action);
-        } else {
-            this.waitingForAction = false;
-        }
-    }
-    
-    highlightElement(selector, text) {
-        const element = document.querySelector(selector);
-        if (!element) {
-            console.warn(`⚠️ Элемент для выделения не найден: ${selector}`);
-            return;
-        }
-        
-        // Создаем подсветку
-        const highlight = document.createElement('div');
-        highlight.className = 'tutorial-highlight';
-        
-        const rect = element.getBoundingClientRect();
-        highlight.style.top = rect.top + 'px';
-        highlight.style.left = rect.left + 'px';
-        highlight.style.width = rect.width + 'px';
-        highlight.style.height = rect.height + 'px';
-        
-        // Добавляем текст
-        const textEl = document.createElement('div');
-        textEl.className = 'tutorial-highlight-text';
-        textEl.textContent = text || 'Кликни сюда';
-        textEl.style.top = (rect.top - 40) + 'px';
-        textEl.style.left = rect.left + 'px';
-        
-        document.body.appendChild(highlight);
-        document.body.appendChild(textEl);
-        
-        this.highlightedElements.push(highlight);
-        this.highlightedElements.push(textEl);
-        
-        // Добавляем пульсирующую анимацию
-        element.classList.add('tutorial-pulse');
-        this.highlightedElements.push(element);
-    }
-    
-    clearHighlights() {
-        this.highlightedElements.forEach(el => {
-            if (el && el.parentNode) {
-                if (el.classList) {
-                    el.classList.remove('tutorial-pulse');
-                }
-                el.parentNode.removeChild(el);
-            }
-        });
-        this.highlightedElements = [];
-    }
-    
-    setupActionListener(action) {
-        switch(action) {
-            case 'click-pokeball':
-                this.waitForPokeballClick();
-                break;
-            case 'open-collection':
-                this.waitForCollectionOpen();
-                break;
-            case 'add-to-team':
-                this.waitForAddToTeam();
-                break;
-            case 'click-team-slot':
-                this.waitForTeamSlotClick();
-                break;
-            case 'attack-enemy':
-                this.waitForAttack();
-                break;
-            case 'open-map':
-                this.waitForMapOpen();
-                break;
-            case 'travel-to-location':
-                this.waitForTravel();
-                break;
-        }
-    }
-    
-    waitForPokeballClick() {
-        const handler = (e) => {
-            const pokeball = e.target.closest('.pokeball-item');
-            if (pokeball) {
-                document.removeEventListener('click', handler);
-                setTimeout(() => {
-                    this.actionCompleted = true;
-                    this.checkActionComplete();
-                }, 2000); // Ждем анимацию открытия
-            }
-        };
-        document.addEventListener('click', handler);
-    }
-    
-    waitForCollectionOpen() {
-        const handler = (e) => {
-            const btn = e.target.closest('#collection-menu');
-            if (btn) {
-                document.removeEventListener('click', handler);
-                this.actionCompleted = true;
-                this.checkActionComplete();
-            }
-        };
-        document.addEventListener('click', handler);
-    }
-    
-    waitForAddToTeam() {
-        const handler = (e) => {
-            const btn = e.target.closest('.add-to-team-btn');
-            if (btn) {
-                document.removeEventListener('click', handler);
-                setTimeout(() => {
-                    this.actionCompleted = true;
-                    this.checkActionComplete();
-                }, 500);
-            }
-        };
-        document.addEventListener('click', handler);
-    }
-    
-    waitForTeamSlotClick() {
-        const handler = (e) => {
-            const slot = e.target.closest('.team-slot:not(.empty)');
-            if (slot) {
-                document.removeEventListener('click', handler);
-                this.actionCompleted = true;
-                this.checkActionComplete();
-            }
-        };
-        document.addEventListener('click', handler);
-    }
-    
-    waitForAttack() {
-        const handler = (e) => {
-            const enemy = e.target.closest('.enemy-card');
-            if (enemy) {
-                document.removeEventListener('click', handler);
-                this.actionCompleted = true;
-                this.checkActionComplete();
-            }
-        };
-        document.addEventListener('click', handler);
-    }
-    
-    waitForMapOpen() {
-        const handler = (e) => {
-            const btn = e.target.closest('#map-menu');
-            if (btn) {
-                document.removeEventListener('click', handler);
-                this.actionCompleted = true;
-                this.checkActionComplete();
-            }
-        };
-        document.addEventListener('click', handler);
-    }
-    
-    waitForTravel() {
-        // Ждем клика на локацию на карте
-        const handler = (e) => {
-            const canvas = e.target.closest('#map-canvas');
-            if (canvas) {
-                // Проверяем, кликнули ли на доступную локацию
-                setTimeout(() => {
-                    if (this.game.locationSystem.transitionInProgress) {
-                        document.removeEventListener('click', handler);
-                        this.actionCompleted = true;
-                        this.checkActionComplete();
-                    }
-                }, 500);
-            }
-        };
-        document.addEventListener('click', handler);
-    }
-    
-    checkActionComplete() {
-        if (this.actionCompleted && this.waitingForAction) {
-            this.waitingForAction = false;
-            this.nextStep();
-        }
-    }
-    
-    setupEventListeners() {
-        // Кнопки в туториале
-        const nextBtns = document.querySelectorAll('.next-btn');
-        const finishBtns = document.querySelectorAll('.finish-btn');
-        
-        this.nextStepHandler = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const step = this.steps[this.currentStep];
-            
-            // Если шаг требует действия и оно не выполнено
-            if (step && step.action && !this.actionCompleted) {
-                this.game.showNotification('Сначала выполни задание!', 'warning');
-                return;
-            }
-            
-            this.nextStep();
-        };
-        
-        this.finishHandler = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.finishTutorial();
-        };
-        
-        nextBtns.forEach(btn => {
-            btn.removeEventListener('click', this.nextStepHandler);
-            btn.addEventListener('click', this.nextStepHandler);
-        });
-        
-        finishBtns.forEach(btn => {
-            btn.removeEventListener('click', this.finishHandler);
-            btn.addEventListener('click', this.finishHandler);
-        });
-    }
-    
-    nextStep() {
-        const step = this.steps[this.currentStep];
+        const step = this.steps[index];
         if (!step) return;
         
-        console.log('Tutorial: переход с шага', this.currentStep, 'на шаг', step.next);
+        const stepEl = document.createElement('div');
+        stepEl.className = 'tutorial-step active';
+        stepEl.id = `tutorial-step-${index}`;
+        stepEl.style.cssText = `
+            display: block !important;
+            animation: tutorialFadeIn 0.3s ease;
+        `;
         
-        // Переходим к следующему шагу
-        if (step.next) {
-            this.showStep(step.next);
+        let html = `<div style="color: #e0e0e0; font-size: 0.95rem; line-height: 1.5; text-align: center;">${step.message}</div>`;
+        
+        if (step.hint) {
+            html += `<div style="text-align: center; color: #ffd700; font-size: 0.8rem; margin-top: 8px;">💡 ${step.hint}</div>`;
+        }
+        
+        if (step.showButton) {
+            if (index === 0) {
+                html += `
+                    <div style="text-align: center; margin-top: 12px;">
+                        <button class="tutorial-start-btn" style="
+                            background: linear-gradient(135deg, #4CAF50, #45a049);
+                            color: #fff;
+                            border: none;
+                            padding: 10px 30px;
+                            border-radius: 100px;
+                            font-size: 1rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            pointer-events: auto !important;
+                        ">
+                            🚀 Начать
+                        </button>
+                    </div>
+                `;
+            } else if (index === this.steps.length - 1) {
+                html += `
+                    <div style="text-align: center; margin-top: 12px;">
+                        <button class="tutorial-finish-btn" style="
+                            background: linear-gradient(135deg, #4CAF50, #45a049);
+                            color: #fff;
+                            border: none;
+                            padding: 10px 30px;
+                            border-radius: 100px;
+                            font-size: 1rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            pointer-events: auto !important;
+                        ">
+                            ✅ Завершить
+                        </button>
+                    </div>
+                `;
+            }
+        } else if (step.action) {
+            html += `<div style="text-align: center; margin-top: 8px; font-size: 0.7rem; color: #666;">👆 Выполните действие</div>`;
+        }
+        
+        stepEl.innerHTML = html;
+        this.modal.querySelector('.tutorial-content').appendChild(stepEl);
+        
+        const startBtn = stepEl.querySelector('.tutorial-start-btn');
+        if (startBtn) {
+            startBtn.onclick = (e) => {
+                e.stopPropagation();
+                console.log('🚀 Начало обучения');
+                this.goToNextStep();
+            };
+        }
+        
+        const finishBtn = stepEl.querySelector('.tutorial-finish-btn');
+        if (finishBtn) {
+            finishBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.finishTutorial();
+            };
+        }
+        
+        if (step.action && step.target && !step.showButton) {
+            this.waitingForAction = true;
+            this.actionCompleted = false;
+            
+            this.stepTimeout = setTimeout(() => {
+                this.showPointer(step.target);
+                this.highlightElement(step.target);
+            }, 300);
+            
+            this.setupActionListener(step.action, step.target, index);
+            
+            if (step.check === 'pokemon-received') {
+                this.checkPokemonReceived();
+            }
+            if (step.check === 'collection-opened') {
+                this.checkCollectionOpened();
+            }
+            if (step.check === 'pokemon-in-team') {
+                this.checkPokemonInTeam();
+            }
+            if (step.check === 'attack-done') {
+                this.checkAttackDone();
+            }
+            if (step.check === 'map-opened') {
+                this.checkMapOpened();
+            }
+        } else if (!step.action && !step.showButton) {
+            this.stepTimeout = setTimeout(() => {
+                this.goToNextStep();
+            }, 2000);
+        }
+    }
+    
+    checkPokemonReceived() {
+        console.log('🔍 Проверка получения покемона...');
+        this.checkInterval = setInterval(() => {
+            if (!this.game || !this.game.pokemonManager) return;
+            
+            const collection = this.game.pokemonManager.collection;
+            if (collection && collection.length > 0) {
+                console.log('✅ Покемон получен!');
+                clearInterval(this.checkInterval);
+                this.checkInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
+                }, 500);
+            }
+        }, 500);
+    }
+    
+    checkCollectionOpened() {
+        console.log('🔍 Проверка открытия коллекции...');
+        this.checkInterval = setInterval(() => {
+            const collectionModal = document.getElementById('collection-modal');
+            if (collectionModal && collectionModal.style.display === 'flex') {
+                console.log('✅ Коллекция открыта!');
+                clearInterval(this.checkInterval);
+                this.checkInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
+                }, 500);
+            }
+        }, 500);
+    }
+    
+    checkPokemonInTeam() {
+        console.log('🔍 Проверка добавления в команду...');
+        this.checkInterval = setInterval(() => {
+            if (!this.game || !this.game.pokemonManager) return;
+            
+            const team = this.game.pokemonManager.team;
+            if (team && team.length > 0) {
+                console.log('✅ Покемон добавлен в команду!');
+                clearInterval(this.checkInterval);
+                this.checkInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
+                }, 500);
+            }
+        }, 500);
+    }
+    
+    checkAttackDone() {
+        console.log('🔍 Проверка атаки...');
+        this.lastEnemyHp = null;
+        this.attackCheckInterval = setInterval(() => {
+            if (!this.game || !this.game.battleSystem) return;
+            
+            const enemy = this.game.battleSystem.currentEnemy;
+            if (!enemy) return;
+            
+            const currentHp = enemy.hp;
+            
+            // Если HP изменилось (уменьшилось) - значит атака была
+            if (this.lastEnemyHp !== null && currentHp < this.lastEnemyHp) {
+                console.log('✅ Атака выполнена! HP уменьшилось с', this.lastEnemyHp, 'до', currentHp);
+                clearInterval(this.attackCheckInterval);
+                this.attackCheckInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
+                }, 500);
+            }
+            
+            this.lastEnemyHp = currentHp;
+        }, 300);
+    }
+    
+    checkMapOpened() {
+        console.log('🔍 Проверка открытия карты...');
+        this.checkInterval = setInterval(() => {
+            const mapModal = document.getElementById('map-modal');
+            if (mapModal && mapModal.style.display === 'flex') {
+                console.log('✅ Карта открыта!');
+                clearInterval(this.checkInterval);
+                this.checkInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
+                }, 500);
+            }
+        }, 500);
+    }
+    
+    highlightElement(targetSelector) {
+        let target = document.querySelector(targetSelector);
+        if (!target) {
+            console.warn(`⚠️ Элемент не найден: ${targetSelector}`);
+            return;
+        }
+        
+        target.classList.add('tutorial-highlight-target');
+        
+        setTimeout(() => {
+            target.classList.remove('tutorial-highlight-target');
+        }, 5000);
+    }
+    
+    removeHighlightOverlay() {
+        document.querySelectorAll('.tutorial-highlight-target').forEach(el => {
+            el.classList.remove('tutorial-highlight-target');
+        });
+    }
+    
+    showPointer(targetSelector) {
+        this.removePointer();
+        
+        let target = document.querySelector(targetSelector);
+        if (!target) {
+            console.warn(`⚠️ Элемент не найден: ${targetSelector}`);
+            return;
+        }
+        
+        const rect = target.getBoundingClientRect();
+        
+        this.pointerElement = document.createElement('div');
+        this.pointerElement.className = 'tutorial-pointer';
+        this.pointerElement.innerHTML = `
+            <div style="font-size: 2rem; display: block; animation: pointerBounce 1s ease-in-out infinite;">👇</div>
+        `;
+        
+        const centerX = rect.left + rect.width / 2;
+        const topY = rect.top - 50;
+        
+        this.pointerElement.style.cssText = `
+            position: fixed;
+            top: ${topY}px;
+            left: ${centerX - 20}px;
+            z-index: 99998;
+            pointer-events: none !important;
+            text-align: center;
+            filter: drop-shadow(0 0 10px rgba(247, 151, 30, 0.5));
+        `;
+        
+        document.body.appendChild(this.pointerElement);
+    }
+    
+    removePointer() {
+        if (this.pointerElement) {
+            this.pointerElement.remove();
+            this.pointerElement = null;
+        }
+    }
+    
+    setupActionListener(action, targetSelector, stepIndex) {
+        console.log('🎯 Настройка слушателя для:', action);
+        
+        this.removeActionListeners();
+        
+        this.actionHandler = (e) => {
+            if (this.actionCompleted) return;
+            
+            let target = null;
+            
+            switch(action) {
+                case 'click-pokeball':
+                    target = e.target.closest('.pokeball-item[data-type="NORMAL"]');
+                    if (target) {
+                        console.log('🔄 Клик по покеболу, ждем получения покемона...');
+                        return;
+                    }
+                    break;
+                case 'open-collection':
+                    target = e.target.closest('#collection-menu');
+                    if (target) {
+                        console.log('🔄 Клик по коллекции, ждем открытия...');
+                        return;
+                    }
+                    break;
+                case 'add-to-team':
+                    target = e.target.closest('.add-to-team-btn');
+                    break;
+                case 'click-team-slot':
+                    target = e.target.closest('.team-slot:not(.empty)');
+                    break;
+                case 'attack-enemy':
+                    target = e.target.closest('.enemy-card');
+                    if (target) {
+                        console.log('🔄 Клик по врагу, ждем атаки...');
+                        // Не завершаем шаг сразу, ждем проверки attack-done
+                        return;
+                    }
+                    break;
+                case 'open-map':
+                    target = e.target.closest('#map-menu');
+                    if (target) {
+                        console.log('🔄 Клик по карте, ждем открытия...');
+                        return;
+                    }
+                    break;
+                case 'travel-to-location':
+                    target = e.target.closest('.location-node.available, .location-node');
+                    break;
+                default:
+                    return;
+            }
+            
+            if (target) {
+                console.log('✅ Действие выполнено!');
+                e.stopPropagation();
+                
+                this.removeActionListeners();
+                this.removePointer();
+                this.removeHighlightOverlay();
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                
+                if (this.game && this.game.uiManager) {
+                    this.game.uiManager.updateUI();
+                }
+                
+                setTimeout(() => {
+                    this.goToNextStep();
+                }, 300);
+            }
+        };
+        
+        document.addEventListener('click', this.actionHandler);
+    }
+    
+    removeActionListeners() {
+        if (this.actionHandler) {
+            document.removeEventListener('click', this.actionHandler);
+            this.actionHandler = null;
+        }
+    }
+    
+    goToNextStep() {
+        const nextIndex = this.currentStep + 1;
+        if (nextIndex < this.steps.length) {
+            this.currentStep = nextIndex;
+            this.showStep(nextIndex);
+        } else {
+            this.finishTutorial();
         }
     }
     
     finishTutorial() {
-        console.log('Tutorial: завершение обучения');
+        console.log('🎉 Завершение обучения');
         
-        if (this.modal) {
-            this.modal.style.display = 'none';
+        if (this.stepTimeout) {
+            clearTimeout(this.stepTimeout);
+            this.stepTimeout = null;
+        }
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+            this.checkInterval = null;
+        }
+        if (this.attackCheckInterval) {
+            clearInterval(this.attackCheckInterval);
+            this.attackCheckInterval = null;
         }
         
-        this.clearHighlights();
+        this.removeActionListeners();
+        this.removePointer();
+        this.removeHighlightOverlay();
+        
+        this.modal.style.cssText = '';
+        this.modal.style.display = 'none';
+        
         this.isTutorialActive = false;
         localStorage.setItem('pokemon_tutorial_completed', 'true');
         
-        // Добавляем стартового покемона, если его нет
         if (this.game && this.game.pokemonManager && this.game.pokemonManager.collection.length === 0) {
             this.game.addStarterPokemon();
         }
         
-        // Обновляем UI
         if (this.game && this.game.uiManager) {
             this.game.uiManager.updateUI();
         }
         
-        // Показываем приветственное сообщение
         if (this.game && this.game.showNotification) {
-            this.game.showNotification('Добро пожаловать в мир покемонов!', 'success');
+            this.game.showNotification('🎊 Добро пожаловать в мир покемонов!', 'success');
+        }
+    }
+    
+    resetTutorial() {
+        console.log('🔄 Сброс туториала');
+        
+        localStorage.removeItem('pokemon_tutorial_completed');
+        
+        if (this.stepTimeout) {
+            clearTimeout(this.stepTimeout);
+            this.stepTimeout = null;
+        }
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+            this.checkInterval = null;
+        }
+        if (this.attackCheckInterval) {
+            clearInterval(this.attackCheckInterval);
+            this.attackCheckInterval = null;
+        }
+        
+        this.removeActionListeners();
+        this.removePointer();
+        this.removeHighlightOverlay();
+        
+        this.isTutorialActive = true;
+        this.currentStep = 0;
+        this.waitingForAction = false;
+        this.actionCompleted = false;
+        this.lastEnemyHp = null;
+        
+        this.modal.style.cssText = `
+            display: flex !important;
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            top: auto !important;
+            left: auto !important;
+            width: auto !important;
+            max-width: 350px !important;
+            background: none !important;
+            backdrop-filter: none !important;
+            z-index: 99999 !important;
+            pointer-events: none !important;
+            padding: 0 !important;
+        `;
+        
+        const content = this.modal.querySelector('.tutorial-content');
+        if (content) {
+            content.style.cssText = `
+                background: linear-gradient(135deg, #1a1a2e, #16213e);
+                border: 2px solid #f7971e;
+                border-radius: 16px;
+                padding: 16px 20px;
+                max-width: 350px;
+                width: 100%;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+                pointer-events: auto !important;
+                margin: 0;
+                position: relative;
+            `;
+        }
+        
+        const oldSteps = this.modal.querySelectorAll('.tutorial-step');
+        oldSteps.forEach(el => el.remove());
+        
+        this.showStep(0);
+    }
+    
+    setupStyles() {
+        if (!document.getElementById('tutorial-styles-final')) {
+            const style = document.createElement('style');
+            style.id = 'tutorial-styles-final';
+            style.textContent = `
+                .tutorial-step {
+                    display: none !important;
+                }
+                
+                .tutorial-step.active {
+                    display: block !important;
+                }
+                
+                .tutorial-highlight-target {
+                    animation: elementPulse 1.5s ease-in-out infinite !important;
+                    position: relative;
+                    z-index: 99997;
+                }
+                
+                .tutorial-start-btn:hover,
+                .tutorial-finish-btn:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+                }
+                
+                @keyframes tutorialFadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px) scale(0.95);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+                
+                @keyframes pointerBounce {
+                    0%, 100% {
+                        transform: translateY(0);
+                    }
+                    50% {
+                        transform: translateY(-8px);
+                    }
+                }
+                
+                @keyframes elementPulse {
+                    0%, 100% {
+                        filter: brightness(1);
+                        transform: scale(1);
+                        box-shadow: 0 0 0 rgba(247, 151, 30, 0);
+                    }
+                    50% {
+                        filter: brightness(1.15);
+                        transform: scale(1.03);
+                        box-shadow: 0 0 20px rgba(247, 151, 30, 0.3);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
         }
     }
 }
-
-// Добавляем стили для туториала
-const tutorialStyles = document.createElement('style');
-tutorialStyles.textContent = `
-    .tutorial-highlight {
-        position: fixed;
-        border: 4px solid var(--accent-warning);
-        border-radius: 8px;
-        box-shadow: 0 0 30px rgba(253, 203, 110, 0.5);
-        pointer-events: none;
-        z-index: 10001;
-        animation: tutorialPulse 1.5s ease-in-out infinite;
-    }
-    
-    .tutorial-highlight-text {
-        position: fixed;
-        background: var(--accent-warning);
-        color: var(--bg-primary);
-        padding: 8px 16px;
-        border-radius: 100px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        pointer-events: none;
-        z-index: 10001;
-        white-space: nowrap;
-        animation: tutorialTextPulse 1.5s ease-in-out infinite;
-    }
-    
-    .tutorial-pulse {
-        animation: elementPulse 1.5s ease-in-out infinite !important;
-    }
-    
-    @keyframes tutorialPulse {
-        0%, 100% {
-            border-color: var(--accent-warning);
-            box-shadow: 0 0 30px rgba(253, 203, 110, 0.5);
-        }
-        50% {
-            border-color: #ffaa00;
-            box-shadow: 0 0 50px rgba(255, 170, 0, 0.8);
-        }
-    }
-    
-    @keyframes tutorialTextPulse {
-        0%, 100% {
-            transform: scale(1);
-            background: var(--accent-warning);
-        }
-        50% {
-            transform: scale(1.05);
-            background: #ffaa00;
-        }
-    }
-    
-    @keyframes elementPulse {
-        0%, 100% {
-            filter: brightness(1);
-        }
-        50% {
-            filter: brightness(1.2);
-        }
-    }
-`;
-document.head.appendChild(tutorialStyles);
 
 window.TutorialSystem = TutorialSystem;
