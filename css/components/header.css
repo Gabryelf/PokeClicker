@@ -1,0 +1,445 @@
+/**
+ * Стили шапки
+ * @module header.css
+ */
+
+ header {
+    height: auto;
+    min-height: 90px;
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 100;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Левая часть - статистика */
+.stats-bar {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 1;
+    min-width: fit-content;
+}
+
+.money-display, .level-display {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.money-display i, .level-display i {
+    font-size: 0.9rem;
+}
+
+/* Центральная часть */
+.header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    margin: 0 8px;
+    flex-wrap: wrap;
+}
+
+.nav-left-group, .nav-right-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    padding: 6px 10px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 100px;
+    white-space: nowrap;
+    height: 36px;
+}
+
+.nav-btn i {
+    font-size: 0.95rem;
+}
+
+.nav-btn:hover {
+    color: var(--accent-primary);
+    background: rgba(108, 92, 231, 0.1);
+}
+
+.nav-btn.active {
+    color: var(--accent-primary);
+    background: rgba(108, 92, 231, 0.15);
+}
+
+/* Аватар */
+.avatar-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin: 0 4px;
+}
+
+.avatar-circle {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.05);
+    border-color: var(--accent-warning);
+    box-shadow: 0 0 20px var(--accent-primary);
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-level {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: var(--accent-tertiary);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-primary);
+}
+
+.avatar-name {
+    font-size: 0.7rem;
+    margin-top: 2px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-align: center;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Компактные элементы */
+.location-badge-compact {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    height: 36px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.location-badge-compact i {
+    font-size: 0.8rem;
+}
+
+.hero-bonus-compact {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    height: 36px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid var(--accent-warning);
+    color: var(--accent-warning);
+}
+
+.hero-bonus-compact i {
+    font-size: 0.8rem;
+    color: var(--accent-warning);
+}
+
+/* Покеболы в шапке */
+.pokeballs-display {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 1;
+    min-width: fit-content;
+}
+
+.pokeball-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 36px;
+}
+
+.pokeball-item:hover {
+    background: rgba(108, 92, 231, 0.1);
+    border-color: var(--accent-primary);
+}
+
+.pokeball-item img {
+    width: 22px !important;
+    height: 22px !important;
+    object-fit: contain;
+}
+
+.pokeball-item span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Адаптивность */
+@media (max-width: 1400px) {
+    .nav-btn {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+    }
+    .location-badge-compact,
+    .hero-bonus-compact {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+    .money-display, .level-display {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .nav-btn span {
+        font-size: 0.75rem;
+    }
+    .location-badge-compact span,
+    .hero-bonus-compact span {
+        font-size: 0.7rem;
+    }
+    .pokeball-item span {
+        font-size: 0.8rem;
+    }
+    .pokeball-item img {
+        width: 20px !important;
+        height: 20px !important;
+    }
+}
+
+@media (max-width: 1024px) {
+    header {
+        padding: 6px 12px;
+    }
+    .avatar-circle {
+        width: 48px;
+        height: 48px;
+    }
+    .avatar-level {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+    }
+    .nav-btn {
+        padding: 5px 7px;
+        height: 32px;
+    }
+    .location-badge-compact,
+    .hero-bonus-compact {
+        padding: 5px 7px;
+        height: 32px;
+    }
+    .pokeball-item {
+        height: 32px;
+        padding: 3px 6px;
+    }
+}
+
+@media (max-width: 900px) {
+    .header-center {
+        gap: 4px;
+    }
+    .nav-left-group, .nav-right-group {
+        gap: 2px;
+    }
+    .nav-btn {
+        padding: 4px 6px;
+    }
+    .nav-btn i {
+        font-size: 0.9rem;
+    }
+    .nav-btn span {
+        font-size: 0.7rem;
+    }
+    .location-badge-compact span,
+    .hero-bonus-compact span {
+        font-size: 0.65rem;
+    }
+    .money-display, .level-display {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        min-height: 80px;
+        padding: 5px 8px;
+    }
+    .stats-bar {
+        order: 1;
+    }
+    .header-center {
+        order: 2;
+        width: 100%;
+        margin: 5px 0 0;
+    }
+    .pokeballs-display {
+        order: 3;
+    }
+    .avatar-circle {
+        width: 44px;
+        height: 44px;
+    }
+    .avatar-name {
+        font-size: 0.65rem;
+    }
+    .money-display, .level-display {
+        padding: 4px 6px;
+        font-size: 0.75rem;
+    }
+    .money-display i, .level-display i {
+        font-size: 0.75rem;
+    }
+    .nav-btn {
+        padding: 4px 5px;
+    }
+    .nav-btn i {
+        font-size: 0.85rem;
+    }
+    .nav-btn span {
+        font-size: 0.65rem;
+    }
+    .location-badge-compact,
+    .hero-bonus-compact {
+        padding: 4px 5px;
+        font-size: 0.7rem;
+    }
+    .location-badge-compact i,
+    .hero-bonus-compact i {
+        font-size: 0.7rem;
+    }
+    .pokeball-item {
+        height: 30px;
+        padding: 3px 5px;
+    }
+    .pokeball-item span {
+        font-size: 0.75rem;
+    }
+    .pokeball-item img {
+        width: 18px !important;
+        height: 18px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .nav-btn span {
+        display: none;
+    }
+    .nav-btn {
+        padding: 5px;
+    }
+    .nav-btn i {
+        font-size: 1rem;
+    }
+    .location-badge-compact span,
+    .hero-bonus-compact span {
+        display: inline-block;
+        font-size: 0.65rem;
+    }
+    .money-display span, .level-display span {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .money-display span, .level-display span {
+        font-size: 0.65rem;
+    }
+    .location-badge-compact,
+    .hero-bonus-compact {
+        padding: 3px 4px;
+    }
+    .location-badge-compact i,
+    .hero-bonus-compact i {
+        font-size: 0.65rem;
+    }
+    .location-badge-compact span,
+    .hero-bonus-compact span {
+        font-size: 0.6rem;
+    }
+    .pokeball-item {
+        padding: 2px 4px;
+        height: 28px;
+    }
+    .pokeball-item span {
+        font-size: 0.7rem;
+    }
+    .pokeball-item img {
+        width: 16px !important;
+        height: 16px !important;
+    }
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+    }
+    .avatar-level {
+        width: 16px;
+        height: 16px;
+        font-size: 0.6rem;
+    }
+}

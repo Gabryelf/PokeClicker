@@ -4,12 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Покемон Кликер</title>
+    
+    <!-- Стили -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/themes/dark.css">
+    <link rel="stylesheet" href="css/components/header.css">
+    <link rel="stylesheet" href="css/components/battle.css">
+    <link rel="stylesheet" href="css/components/modals.css">
+    <link rel="stylesheet" href="css/components/animations.css">
 </head>
 <body>
     <div class="container">
-
         <header>
             <!-- Левая часть - статистика -->
             <div class="stats-bar">
@@ -84,26 +90,21 @@
             <div class="battle-area">
                 <!-- КАРТОЧКА ВРАГА -->
                 <div class="enemy-card" id="enemy-card">
-                    <!-- Верхняя часть -->
                     <div class="enemy-header">
                         <span class="enemy-level" id="enemy-level">1</span>
                         <h2 class="enemy-name" id="enemy-name">Загрузка...</h2>
                     </div>
                     
-                    <!-- Изображение врага -->
                     <div class="enemy-image-container" id="enemy-image-container">
                         <img src="" alt="Противник" class="enemy-image" id="enemy-image">
                     </div>
                     
-                    <!-- Нижняя часть с HP и иконками -->
                     <div class="enemy-bottom">
-                        <!-- Иконка редкости слева с тултипом -->
                         <div class="rarity-icon-wrapper">
                             <div class="rarity-icon" id="enemy-rarity-icon"></div>
                             <div class="rarity-tooltip" id="enemy-rarity-tooltip"></div>
                         </div>
                         
-                        <!-- HP bar в центре -->
                         <div class="enemy-hp">
                             <div class="hp-bar">
                                 <div class="hp-fill" id="enemy-hp-bar" style="width: 100%"></div>
@@ -111,18 +112,13 @@
                             <div class="hp-text" id="enemy-hp-text">100/100</div>
                         </div>
                         
-                        <!-- Иконки стихий справа -->
                         <div class="type-icons" id="enemy-type-icons"></div>
                     </div>
-                    
-
                 </div>
 
                 <!-- КОМАНДА ИГРОКА -->
                 <div class="player-team">
-                    <div class="team-slots" id="team-slots">
-                        <!-- Динамически заполняется -->
-                    </div>
+                    <div class="team-slots" id="team-slots"></div>
                 </div>
             </div>
         </main>
@@ -159,7 +155,6 @@
         </div>
     </div>
 
-    <!-- НОВОЕ МОДАЛЬНОЕ ОКНО ДЛЯ ГЕРОЕВ -->
     <div id="hero-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -170,7 +165,6 @@
         </div>
     </div>
 
-    <!-- НОВОЕ МОДАЛЬНОЕ ОКНО ДЛЯ УЛУЧШЕНИЙ ГЕРОЯ -->
     <div id="hero-upgrade-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -181,7 +175,6 @@
         </div>
     </div>
 
-    <!-- НОВОЕ МОДАЛЬНОЕ ОКНО ДЛЯ ПОКЕМОН-ЦЕНТРА -->
     <div id="pokemon-center-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -192,7 +185,6 @@
         </div>
     </div>
 
-    <!-- НОВОЕ МОДАЛЬНОЕ ОКНО ДЛЯ АРЕНЫ -->
     <div id="gym-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -203,10 +195,9 @@
         </div>
     </div>
 
-    <!-- ОСТАЛЬНЫЕ МОДАЛЬНЫЕ ОКНА -->
     <div id="tutorial" class="tutorial-overlay">
         <div class="tutorial-content">
-            <h2><img src="https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/logo/pokemon-logo-2.gif" width="400"> </h2>
+            <h2><img src="https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/logo/pokemon-logo-2.gif" width="400"></h2>
             <div class="tutorial-step" id="step-1">
                 <p>Привет, тренер! Сейчас я покажу тебе, как играть.</p>
                 <button class="tutorial-btn next-btn">Далее</button>
@@ -232,24 +223,34 @@
 
     <div id="notification-container"></div>
 
-    <!-- Скрипты логики -->
-    <script src="config.js"></script>
-    <script src="image-config.js"></script>
-    <script src="image-loader.js"></script>
-    <script src="save-manager.js"></script>
-    <script src="pokemon-manager.js"></script>
-    <script src="shop-system.js"></script>
-    <script src="sound-generator.js"></script>
-    <script src="animations.js"></script>
-    <script src="battle-system.js"></script>
-    <script src="location-system.js"></script> 
-    <script src="hero-system.js"></script>
-    <script src="pokemon-center.js"></script>
-    <script src="gym-system.js"></script>
-    <script src="map-modal.js"></script>       
-    <script src="quests-panel.js"></script>  
-    <script src="tutorial.js"></script>
-    <script src="ui-manager.js"></script>
-    <script src="game.js"></script>
+    <!-- Core -->
+    <script src="js/core/Config.js"></script>
+    <script src="js/core/ImageConfig.js"></script>
+    <script src="js/core/Game.js"></script>
+
+    <!-- Utils -->
+    <script src="js/utils/ImageLoader.js"></script>
+    <script src="js/utils/SoundGenerator.js"></script>
+    <script src="js/utils/AnimationManager.js"></script>
+    <script src="js/utils/Helpers.js"></script>
+
+    <!-- Systems -->
+    <script src="js/systems/SaveManager.js"></script>
+    <script src="js/systems/PokemonManager.js"></script>
+    <script src="js/systems/ShopSystem.js"></script>
+    <script src="js/systems/BattleSystem.js"></script>
+    <script src="js/systems/LocationSystem.js"></script>
+    <script src="js/systems/HeroSystem.js"></script>
+    <script src="js/systems/GymSystem.js"></script>
+    <script src="js/systems/PokemonCenter.js"></script>
+
+    <!-- UI -->
+    <script src="js/ui/UIManager.js"></script>
+    <script src="js/ui/MapModal.js"></script>
+    <script src="js/ui/QuestsPanel.js"></script>
+    <script src="js/ui/TutorialSystem.js"></script>
+
+    <!-- Main -->
+    <script src="js/main.js"></script>
 </body>
 </html>
