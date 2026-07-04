@@ -1,5 +1,5 @@
 /**
- * Менеджер пользовательского интерфейса
+ * Менеджер пользовательского интерфейса - исправленная версия
  * @module UIManager
  */
 
@@ -343,12 +343,16 @@
             var card = await this.createPokemonCard(pokemon);
             collectionGrid.appendChild(card);
         }
+        
+        // Добавляем обработчики для кнопок "В команду"
+        this.addCollectionButtonHandlers();
     }
     
     async createPokemonCard(pokemon) {
         var card = document.createElement('div');
         card.className = 'pokemon-card';
         card.dataset.id = pokemon.id;
+        card.dataset.pokemonId = pokemon.id;
         var rarity = CONFIG.RARITIES[pokemon.rarity];
         var energyPercent = (pokemon.energy / pokemon.maxEnergy) * 100;
         
@@ -370,18 +374,47 @@
             }
         }
         
-        card.innerHTML = '<div class="pokemon-image-container"><img src="' + img.src + '" alt="' + pokemon.name + '" class="pokemon-image" width="100" height="100"></div>' +
-            '<h4>' + pokemon.name + '</h4>' +
-            '<div class="pokemon-rarity" style="color: ' + rarity.color + '; border-color: ' + rarity.color + '">' + rarity.name + '</div>' +
-            '<div class="pokemon-stats">' +
-            '<div>Уровень: ' + pokemon.level + '</div>' +
-            '<div>Урон: ' + Math.floor(pokemon.currentDamage) + '</div>' +
-            '<div>Энергия: ' + Math.floor(energyPercent) + '%</div>' +
-            '<div>Слияний: ' + (pokemon.mergeCount || 0) + '</div>' +
-            '</div>' +
-            (isInTeam ? '<div class="in-team">В команде</div>' : '');
+        // Создаем карточку с кнопкой "В команду"
+        card.innerHTML = `
+            <div class="pokemon-image-container">
+                <img src="${img.src}" alt="${pokemon.name}" class="pokemon-image" width="100" height="100">
+            </div>
+            <h4>${pokemon.name}</h4>
+            <div class="pokemon-rarity" style="color: ${rarity.color}; border-color: ${rarity.color}">${rarity.name}</div>
+            <div class="pokemon-stats">
+                <div>Уровень: ${pokemon.level}</div>
+                <div>Урон: ${Math.floor(pokemon.currentDamage)}</div>
+                <div>Энергия: ${Math.floor(energyPercent)}%</div>
+                <div>Слияний: ${pokemon.mergeCount || 0}</div>
+            </div>
+            ${isInTeam ? '<div class="in-team">В команде</div>' : ''}
+            <div class="pokemon-actions">
+                ${!isInTeam && pokemon.energy > 0 && this.game.pokemonManager.team.length < this.game.pokemonManager.maxTeamSize ? 
+                    `<button class="add-to-team-btn" data-pokemon-id="${pokemon.id}">➕ В команду</button>` : 
+                    (!isInTeam && pokemon.energy <= 0 ? '<div class="no-energy">Нет энергии</div>' : '')}
+            </div>
+        `;
         
         return card;
+    }
+    
+    addCollectionButtonHandlers() {
+        var self = this;
+        var buttons = document.querySelectorAll('#collection-grid .add-to-team-btn');
+        buttons.forEach(function(btn) {
+            btn.removeEventListener('click', self.collectionAddHandler);
+            self.collectionAddHandler = function(e) {
+                e.stopPropagation();
+                var pokemonId = parseInt(btn.dataset.pokemonId);
+                var result = self.game.addToTeam(pokemonId);
+                if (result && result.success) {
+                    // Обновляем коллекцию
+                    self.createCollectionUI();
+                    self.updateUI();
+                }
+            };
+            btn.addEventListener('click', self.collectionAddHandler);
+        });
     }
     
     async createTeamSelectionUI() {
@@ -467,11 +500,16 @@
             img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
         }
         
-        card.innerHTML = '<img src="' + img.src + '" alt="' + pokemon.name + '" class="pokemon-image" width="80" height="80">' +
-            '<h4>' + pokemon.name + '</h4>' +
-            '<div class="pokemon-rarity" style="color: ' + rarity.color + '; border-color: ' + rarity.color + '">Lv.' + pokemon.level + ' ' + rarity.name + '</div>' +
-            '<div class="pokemon-stats"><div>Урон: ' + Math.floor(pokemon.currentDamage) + '</div><div>Энергия: ' + Math.floor(energyPercent) + '%</div></div>' +
-            '<button class="add-to-team-btn">➕ В команду</button>';
+        card.innerHTML = `
+            <img src="${img.src}" alt="${pokemon.name}" class="pokemon-image" width="80" height="80">
+            <h4>${pokemon.name}</h4>
+            <div class="pokemon-rarity" style="color: ${rarity.color}; border-color: ${rarity.color}">Lv.${pokemon.level} ${rarity.name}</div>
+            <div class="pokemon-stats">
+                <div>Урон: ${Math.floor(pokemon.currentDamage)}</div>
+                <div>Энергия: ${Math.floor(energyPercent)}%</div>
+            </div>
+            <button class="add-to-team-btn" data-pokemon-id="${pokemon.id}">➕ В команду</button>
+        `;
         
         return card;
     }
@@ -492,9 +530,14 @@
         }
         
         var energyPercent = (pokemon.energy / pokemon.maxEnergy) * 100;
-        slot.innerHTML = '<img src="' + img.src + '" alt="' + pokemon.name + '" class="team-pokemon-image" width="50" height="50">' +
-            '<div class="pokemon-info"><span class="pokemon-name">' + pokemon.name + '</span><span class="pokemon-level">Lv.' + pokemon.level + '</span></div>' +
-            '<div class="energy-bar" style="--energy-width: ' + energyPercent + '%"></div>';
+        slot.innerHTML = `
+            <img src="${img.src}" alt="${pokemon.name}" class="team-pokemon-image" width="50" height="50">
+            <div class="pokemon-info">
+                <span class="pokemon-name">${pokemon.name}</span>
+                <span class="pokemon-level">Lv.${pokemon.level}</span>
+            </div>
+            <div class="energy-bar" style="--energy-width: ${energyPercent}%"></div>
+        `;
         
         if (isSelected) {
             var removeBtn = document.createElement('button');
@@ -505,6 +548,7 @@
                 e.stopPropagation();
                 self.game.removeFromTeam(pokemon.id);
                 self.createTeamSelectionUI();
+                self.updateUI();
             });
             slot.appendChild(removeBtn);
         }
@@ -513,17 +557,20 @@
     }
     
     addTeamSelectionHandlers() {
-        var selectableCards = document.querySelectorAll('.pokemon-card.selectable');
         var self = this;
-        selectableCards.forEach(function(card) {
-            var addButton = card.querySelector('.add-to-team-btn');
-            if (addButton) {
-                addButton.addEventListener('click', function() {
-                    var pokemonId = parseInt(card.dataset.id);
-                    self.game.addToTeam(pokemonId);
+        var buttons = document.querySelectorAll('.available-pokemon .add-to-team-btn, .pokemon-card.selectable .add-to-team-btn');
+        buttons.forEach(function(btn) {
+            btn.removeEventListener('click', self.teamAddHandler);
+            self.teamAddHandler = function(e) {
+                e.stopPropagation();
+                var pokemonId = parseInt(btn.dataset.pokemonId);
+                var result = self.game.addToTeam(pokemonId);
+                if (result && result.success) {
                     self.createTeamSelectionUI();
-                });
-            }
+                    self.updateUI();
+                }
+            };
+            btn.addEventListener('click', self.teamAddHandler);
         });
     }
     
@@ -595,7 +642,31 @@
         var modal = document.createElement('div');
         modal.id = 'merge-modal';
         modal.className = 'modal';
-        modal.innerHTML = '<div class="modal-content merge-modal"><div class="modal-header"><h2><i class="fas fa-merge"></i> Слияние покемонов!</h2><span class="close-merge">&times;</span></div><div class="modal-body merge-body"><div class="merge-animation"><div class="merge-pokemon original"></div><div class="merge-plus">+</div><div class="merge-pokemon duplicate"></div><div class="merge-equals">=</div><div class="merge-pokemon result"></div></div><div class="merge-details"><h3 class="merge-name"></h3><div class="merge-stats"><div class="stat"><span>Уровень</span><span class="level-change"></span></div><div class="stat"><span>Урон</span><span class="damage-change"></span></div><div class="stat"><span>Слияний</span><span class="merge-count"></span></div></div></div></div></div>';
+        modal.innerHTML = `
+            <div class="modal-content merge-modal">
+                <div class="modal-header">
+                    <h2><i class="fas fa-merge"></i> Слияние покемонов!</h2>
+                    <span class="close-merge">&times;</span>
+                </div>
+                <div class="modal-body merge-body">
+                    <div class="merge-animation">
+                        <div class="merge-pokemon original"></div>
+                        <div class="merge-plus">+</div>
+                        <div class="merge-pokemon duplicate"></div>
+                        <div class="merge-equals">=</div>
+                        <div class="merge-pokemon result"></div>
+                    </div>
+                    <div class="merge-details">
+                        <h3 class="merge-name"></h3>
+                        <div class="merge-stats">
+                            <div class="stat"><span>Уровень</span><span class="level-change"></span></div>
+                            <div class="stat"><span>Урон</span><span class="damage-change"></span></div>
+                            <div class="stat"><span>Слияний</span><span class="merge-count"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
         document.body.appendChild(modal);
         
         var closeBtn = modal.querySelector('.close-merge');

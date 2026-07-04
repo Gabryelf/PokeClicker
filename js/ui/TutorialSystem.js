@@ -1,5 +1,5 @@
 /**
- * Система туториала
+ * Система туториала - полностью исправленная версия
  * @module TutorialSystem
  */
 
@@ -10,15 +10,31 @@
         this.isTutorialActive = false;
         this.modal = document.getElementById('tutorial');
         this.pointerElement = null;
+        this.highlightOverlay = null;
         this.actionHandler = null;
-        this.checkInterval = null;
         this.stepTimeout = null;
+        this.checkInterval = null;
         this.attackCheckInterval = null;
         this.lastEnemyHp = null;
         this.lastLocation = null;
         this.waitingForAction = false;
         this.actionCompleted = false;
+        this.steps = [];
+        this.isWaitingForTeamAdd = false;
         
+        // Определяем шаги в зависимости от версии игры
+        this.initializeSteps();
+        
+        if (!this.modal) {
+            console.error('❌ Модальное окно туториала не найдено');
+            return;
+        }
+        
+        this.init();
+        this.setupStyles();
+    }
+    
+    initializeSteps() {
         this.steps = [
             {
                 message: '👋 Привет! Нажми "Начать", чтобы начать обучение',
@@ -26,7 +42,8 @@
                 target: null,
                 hint: null,
                 check: null,
-                showButton: true
+                showButton: true,
+                isStart: true
             },
             {
                 message: '🎯 Кликни на <b style="color:#ff6b6b;">красный покебол</b> вверху',
@@ -34,7 +51,8 @@
                 target: '.pokeball-item[data-type="NORMAL"]',
                 hint: 'Красный покебол',
                 check: 'pokemon-received',
-                showButton: false
+                showButton: false,
+                isStart: false
             },
             {
                 message: '✨ Открой <b style="color:#f7971e;">коллекцию</b> (иконка дракона)',
@@ -42,7 +60,8 @@
                 target: '#collection-menu',
                 hint: 'Кнопка коллекции',
                 check: 'collection-opened',
-                showButton: false
+                showButton: false,
+                isStart: false
             },
             {
                 message: '📦 Нажми <b style="color:#4CAF50;">"В команду"</b> под покемоном',
@@ -50,7 +69,8 @@
                 target: '.add-to-team-btn',
                 hint: 'Кнопка "В команду"',
                 check: 'pokemon-in-team',
-                showButton: false
+                showButton: false,
+                isStart: false
             },
             {
                 message: '✅ Кликни на <b style="color:#4CAF50;">покемона внизу</b>',
@@ -58,7 +78,8 @@
                 target: '.team-slot:not(.empty)',
                 hint: 'Слот покемона',
                 check: null,
-                showButton: false
+                showButton: false,
+                isStart: false
             },
             {
                 message: '⚔️ <b style="color:#ff6b6b;">Атакуй</b> врага! Кликни на него',
@@ -66,7 +87,8 @@
                 target: '.enemy-card',
                 hint: 'Карточка врага',
                 check: 'attack-done',
-                showButton: false
+                showButton: false,
+                isStart: false
             },
             {
                 message: '💥 Открой <b style="color:#f7971e;">карту</b> (иконка карты)',
@@ -74,7 +96,8 @@
                 target: '#map-menu',
                 hint: 'Кнопка карты',
                 check: 'map-opened',
-                showButton: false
+                showButton: false,
+                isStart: false
             },
             {
                 message: '🗺️ Выбери <b style="color:#4CAF50;">любую локацию</b> на карте',
@@ -82,7 +105,8 @@
                 target: '.location-node.available',
                 hint: 'Доступная локация',
                 check: 'location-changed',
-                showButton: false
+                showButton: false,
+                isStart: false
             },
             {
                 message: '🎉 Поздравляю! Ты освоил основы!',
@@ -90,23 +114,23 @@
                 target: null,
                 hint: null,
                 check: null,
-                showButton: true
+                showButton: true,
+                isStart: false,
+                isFinish: true
             }
         ];
-        
-        if (!this.modal) return;
-        this.init();
-        this.setupStyles();
     }
     
     init() {
-        var completed = localStorage.getItem('pokemon_tutorial_completed');
+        const completed = localStorage.getItem('pokemon_tutorial_completed');
         if (completed === 'true') {
             this.modal.style.display = 'none';
             this.isTutorialActive = false;
+            console.log('📖 Туториал уже пройден');
             return;
         }
         
+        console.log('📖 Запуск туториала');
         this.isTutorialActive = true;
         this.currentStep = 0;
         this.lastLocation = null;
@@ -127,7 +151,7 @@
             padding: 0 !important;
         `;
         
-        var content = this.modal.querySelector('.tutorial-content');
+        const content = this.modal.querySelector('.tutorial-content');
         if (content) {
             content.style.cssText = `
                 background: linear-gradient(135deg, #1a1a2e, #16213e);
@@ -143,16 +167,18 @@
             `;
         }
         
-        var title = this.modal.querySelector('h2');
+        const title = this.modal.querySelector('h2');
         if (title) title.style.display = 'none';
         
-        var closeBtn = this.modal.querySelector('.close');
+        const closeBtn = this.modal.querySelector('.close');
         if (closeBtn) closeBtn.style.display = 'none';
         
         this.showStep(0);
     }
     
     showStep(index) {
+        console.log('📖 Показ шага:', index);
+        
         if (this.stepTimeout) {
             clearTimeout(this.stepTimeout);
             this.stepTimeout = null;
@@ -167,53 +193,105 @@
         }
         
         this.removePointer();
+        this.removeHighlightOverlay();
         this.removeActionListeners();
         
-        var allSteps = this.modal.querySelectorAll('.tutorial-step');
-        allSteps.forEach(function(el) { el.remove(); });
+        const allSteps = this.modal.querySelectorAll('.tutorial-step');
+        allSteps.forEach(el => el.remove());
         
-        var step = this.steps[index];
+        const step = this.steps[index];
         if (!step) return;
         
-        var stepEl = document.createElement('div');
+        const stepEl = document.createElement('div');
         stepEl.className = 'tutorial-step active';
-        stepEl.id = 'tutorial-step-' + index;
-        stepEl.style.cssText = 'display: block !important; animation: tutorialFadeIn 0.3s ease;';
+        stepEl.id = `tutorial-step-${index}`;
+        stepEl.style.cssText = `
+            display: block !important;
+            animation: tutorialFadeIn 0.3s ease;
+        `;
         
-        var html = '<div style="color: #e0e0e0; font-size: 0.95rem; line-height: 1.5; text-align: center;">' + step.message + '</div>';
+        let html = `<div style="color: #e0e0e0; font-size: 0.95rem; line-height: 1.5; text-align: center;">${step.message}</div>`;
         
         if (step.hint) {
-            html += '<div style="text-align: center; color: #ffd700; font-size: 0.8rem; margin-top: 8px;">💡 ' + step.hint + '</div>';
+            html += `<div style="text-align: center; color: #ffd700; font-size: 0.8rem; margin-top: 8px;">💡 ${step.hint}</div>`;
         }
         
+        // Добавляем индикатор прогресса
+        html += `
+            <div style="text-align: center; margin-top: 10px; display: flex; justify-content: center; gap: 4px;">
+                ${this.steps.map((_, i) => `
+                    <div style="
+                        width: 6px;
+                        height: 6px;
+                        border-radius: 50%;
+                        background: ${i <= index ? '#4CAF50' : '#333'};
+                        transition: all 0.3s ease;
+                    "></div>
+                `).join('')}
+            </div>
+        `;
+        
         if (step.showButton) {
-            if (index === 0) {
-                html += '<div style="text-align: center; margin-top: 12px;"><button class="tutorial-start-btn" style="background: linear-gradient(135deg, #4CAF50, #45a049); color: #fff; border: none; padding: 10px 30px; border-radius: 100px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; pointer-events: auto !important;">🚀 Начать</button></div>';
-            } else if (index === this.steps.length - 1) {
-                html += '<div style="text-align: center; margin-top: 12px;"><button class="tutorial-finish-btn" style="background: linear-gradient(135deg, #4CAF50, #45a049); color: #fff; border: none; padding: 10px 30px; border-radius: 100px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; pointer-events: auto !important;">✅ Завершить</button></div>';
+            if (step.isStart) {
+                html += `
+                    <div style="text-align: center; margin-top: 12px;">
+                        <button class="tutorial-start-btn" style="
+                            background: linear-gradient(135deg, #4CAF50, #45a049);
+                            color: #fff;
+                            border: none;
+                            padding: 10px 30px;
+                            border-radius: 100px;
+                            font-size: 1rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            pointer-events: auto !important;
+                        ">
+                            🚀 Начать
+                        </button>
+                    </div>
+                `;
+            } else if (step.isFinish) {
+                html += `
+                    <div style="text-align: center; margin-top: 12px;">
+                        <button class="tutorial-finish-btn" style="
+                            background: linear-gradient(135deg, #4CAF50, #45a049);
+                            color: #fff;
+                            border: none;
+                            padding: 10px 30px;
+                            border-radius: 100px;
+                            font-size: 1rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            pointer-events: auto !important;
+                        ">
+                            ✅ Завершить
+                        </button>
+                    </div>
+                `;
             }
         } else if (step.action) {
-            html += '<div style="text-align: center; margin-top: 8px; font-size: 0.7rem; color: #666;">👆 Выполните действие</div>';
+            html += `<div style="text-align: center; margin-top: 8px; font-size: 0.7rem; color: #666;">👆 Выполните действие</div>`;
         }
         
         stepEl.innerHTML = html;
         this.modal.querySelector('.tutorial-content').appendChild(stepEl);
         
-        var startBtn = stepEl.querySelector('.tutorial-start-btn');
+        const startBtn = stepEl.querySelector('.tutorial-start-btn');
         if (startBtn) {
-            var self = this;
-            startBtn.onclick = function(e) {
+            startBtn.onclick = (e) => {
                 e.stopPropagation();
-                self.goToNextStep();
+                console.log('🚀 Начало обучения');
+                this.goToNextStep();
             };
         }
         
-        var finishBtn = stepEl.querySelector('.tutorial-finish-btn');
+        const finishBtn = stepEl.querySelector('.tutorial-finish-btn');
         if (finishBtn) {
-            var self = this;
-            finishBtn.onclick = function(e) {
+            finishBtn.onclick = (e) => {
                 e.stopPropagation();
-                self.finishTutorial();
+                this.finishTutorial();
             };
         }
         
@@ -221,9 +299,9 @@
             this.waitingForAction = true;
             this.actionCompleted = false;
             
-            var self = this;
-            this.stepTimeout = setTimeout(function() {
-                self.showPointer(step.target);
+            this.stepTimeout = setTimeout(() => {
+                this.showPointer(step.target);
+                this.highlightElement(step.target);
             }, 300);
             
             this.setupActionListener(step.action, step.target, index);
@@ -247,146 +325,231 @@
                 this.checkLocationChanged();
             }
         } else if (!step.action && !step.showButton) {
-            var self = this;
-            this.stepTimeout = setTimeout(function() {
-                self.goToNextStep();
+            this.stepTimeout = setTimeout(() => {
+                this.goToNextStep();
             }, 2000);
         }
     }
     
     checkPokemonReceived() {
-        var self = this;
-        this.checkInterval = setInterval(function() {
-            if (!self.game || !self.game.pokemonManager) return;
-            var collection = self.game.pokemonManager.collection;
+        console.log('🔍 Проверка получения покемона...');
+        this.checkInterval = setInterval(() => {
+            if (!this.game || !this.game.pokemonManager) return;
+            
+            const collection = this.game.pokemonManager.collection;
             if (collection && collection.length > 0) {
-                clearInterval(self.checkInterval);
-                self.checkInterval = null;
-                self.actionCompleted = true;
-                self.waitingForAction = false;
-                self.removePointer();
-                self.removeActionListeners();
-                setTimeout(function() {
-                    self.goToNextStep();
+                console.log('✅ Покемон получен!');
+                clearInterval(this.checkInterval);
+                this.checkInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
                 }, 500);
             }
         }, 500);
     }
     
     checkCollectionOpened() {
-        var self = this;
-        this.checkInterval = setInterval(function() {
-            var collectionModal = document.getElementById('collection-modal');
+        console.log('🔍 Проверка открытия коллекции...');
+        this.checkInterval = setInterval(() => {
+            const collectionModal = document.getElementById('collection-modal');
             if (collectionModal && collectionModal.style.display === 'flex') {
-                clearInterval(self.checkInterval);
-                self.checkInterval = null;
-                self.actionCompleted = true;
-                self.waitingForAction = false;
-                self.removePointer();
-                self.removeActionListeners();
-                setTimeout(function() {
-                    self.goToNextStep();
+                console.log('✅ Коллекция открыта!');
+                clearInterval(this.checkInterval);
+                this.checkInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
                 }, 500);
             }
         }, 500);
     }
     
     checkPokemonInTeam() {
-        var self = this;
-        this.checkInterval = setInterval(function() {
-            if (!self.game || !self.game.pokemonManager) return;
-            var team = self.game.pokemonManager.team;
-            if (team && team.length > 0) {
-                clearInterval(self.checkInterval);
-                self.checkInterval = null;
-                self.actionCompleted = true;
-                self.waitingForAction = false;
-                self.removePointer();
-                self.removeActionListeners();
-                setTimeout(function() {
-                    self.goToNextStep();
+        console.log('🔍 Проверка добавления в команду...');
+        let previousTeamSize = this.game.pokemonManager.team ? this.game.pokemonManager.team.length : 0;
+        
+        this.checkInterval = setInterval(() => {
+            if (!this.game || !this.game.pokemonManager) return;
+            
+            const team = this.game.pokemonManager.team;
+            const currentTeamSize = team ? team.length : 0;
+            
+            // Проверяем, увеличился ли размер команды
+            if (currentTeamSize > previousTeamSize) {
+                console.log('✅ Покемон добавлен в команду! Размер команды:', currentTeamSize);
+                clearInterval(this.checkInterval);
+                this.checkInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                // Закрываем коллекцию, если она открыта
+                const collectionModal = document.getElementById('collection-modal');
+                if (collectionModal && collectionModal.style.display === 'flex') {
+                    collectionModal.style.display = 'none';
+                }
+                
+                setTimeout(() => {
+                    this.goToNextStep();
                 }, 500);
             }
-        }, 500);
+            
+            previousTeamSize = currentTeamSize;
+        }, 300);
     }
     
     checkAttackDone() {
-        var self = this;
+        console.log('🔍 Проверка атаки...');
         this.lastEnemyHp = null;
-        this.attackCheckInterval = setInterval(function() {
-            if (!self.game || !self.game.battleSystem) return;
-            var enemy = self.game.battleSystem.currentEnemy;
+        this.attackCheckInterval = setInterval(() => {
+            if (!this.game || !this.game.battleSystem) return;
+            
+            const enemy = this.game.battleSystem.currentEnemy;
             if (!enemy) return;
-            var currentHp = enemy.hp;
-            if (self.lastEnemyHp !== null && currentHp < self.lastEnemyHp) {
-                clearInterval(self.attackCheckInterval);
-                self.attackCheckInterval = null;
-                self.actionCompleted = true;
-                self.waitingForAction = false;
-                self.removePointer();
-                self.removeActionListeners();
-                setTimeout(function() {
-                    self.goToNextStep();
+            
+            const currentHp = enemy.hp;
+            
+            if (this.lastEnemyHp !== null && currentHp < this.lastEnemyHp) {
+                console.log('✅ Атака выполнена! HP уменьшилось с', this.lastEnemyHp, 'до', currentHp);
+                clearInterval(this.attackCheckInterval);
+                this.attackCheckInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
                 }, 500);
             }
-            self.lastEnemyHp = currentHp;
+            
+            this.lastEnemyHp = currentHp;
         }, 300);
     }
     
     checkMapOpened() {
-        var self = this;
-        this.checkInterval = setInterval(function() {
-            var mapModal = document.getElementById('map-modal');
+        console.log('🔍 Проверка открытия карты...');
+        this.checkInterval = setInterval(() => {
+            const mapModal = document.getElementById('map-modal');
             if (mapModal && mapModal.style.display === 'flex') {
-                clearInterval(self.checkInterval);
-                self.checkInterval = null;
-                self.actionCompleted = true;
-                self.waitingForAction = false;
-                self.removePointer();
-                self.removeActionListeners();
-                setTimeout(function() {
-                    self.goToNextStep();
+                console.log('✅ Карта открыта!');
+                clearInterval(this.checkInterval);
+                this.checkInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
                 }, 500);
             }
         }, 500);
     }
     
     checkLocationChanged() {
-        var self = this;
+        console.log('🔍 Проверка изменения локации...');
         this.lastLocation = null;
+        
         if (this.game && this.game.locationSystem) {
             this.lastLocation = this.game.locationSystem.currentLocation;
         }
-        this.checkInterval = setInterval(function() {
-            if (!self.game || !self.game.locationSystem) return;
-            var currentLocation = self.game.locationSystem.currentLocation;
-            if (self.lastLocation !== null && currentLocation !== self.lastLocation) {
-                clearInterval(self.checkInterval);
-                self.checkInterval = null;
-                self.actionCompleted = true;
-                self.waitingForAction = false;
-                self.removePointer();
-                self.removeActionListeners();
-                setTimeout(function() {
-                    self.goToNextStep();
+        
+        this.checkInterval = setInterval(() => {
+            if (!this.game || !this.game.locationSystem) return;
+            
+            const currentLocation = this.game.locationSystem.currentLocation;
+            
+            if (this.lastLocation !== null && currentLocation !== this.lastLocation) {
+                console.log('✅ Локация изменена! Было:', this.lastLocation, 'Стало:', currentLocation);
+                clearInterval(this.checkInterval);
+                this.checkInterval = null;
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                this.removePointer();
+                this.removeHighlightOverlay();
+                this.removeActionListeners();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
                 }, 500);
             }
-            self.lastLocation = currentLocation;
+            
+            this.lastLocation = currentLocation;
         }, 500);
+    }
+    
+    highlightElement(targetSelector) {
+        let target = document.querySelector(targetSelector);
+        if (!target) {
+            console.warn(`⚠️ Элемент не найден: ${targetSelector}`);
+            return;
+        }
+        
+        target.classList.add('tutorial-highlight-target');
+        
+        setTimeout(() => {
+            target.classList.remove('tutorial-highlight-target');
+        }, 5000);
+    }
+    
+    removeHighlightOverlay() {
+        document.querySelectorAll('.tutorial-highlight-target').forEach(el => {
+            el.classList.remove('tutorial-highlight-target');
+        });
     }
     
     showPointer(targetSelector) {
         this.removePointer();
-        var target = document.querySelector(targetSelector);
-        if (!target) return;
         
-        var rect = target.getBoundingClientRect();
+        let target = document.querySelector(targetSelector);
+        if (!target) {
+            console.warn(`⚠️ Элемент не найден: ${targetSelector}`);
+            return;
+        }
+        
+        const rect = target.getBoundingClientRect();
+        
         this.pointerElement = document.createElement('div');
         this.pointerElement.className = 'tutorial-pointer';
-        this.pointerElement.innerHTML = '<div style="font-size: 2rem; display: block; animation: pointerBounce 1s ease-in-out infinite;">👇</div>';
-        var centerX = rect.left + rect.width / 2;
-        var topY = rect.top - 50;
-        this.pointerElement.style.cssText = 'position: fixed; top: ' + topY + 'px; left: ' + (centerX - 20) + 'px; z-index: 99998; pointer-events: none !important; text-align: center; filter: drop-shadow(0 0 10px rgba(247, 151, 30, 0.5));';
+        this.pointerElement.innerHTML = `
+            <div style="font-size: 2rem; display: block; animation: pointerBounce 1s ease-in-out infinite;">👇</div>
+        `;
+        
+        const centerX = rect.left + rect.width / 2;
+        const topY = rect.top - 50;
+        
+        this.pointerElement.style.cssText = `
+            position: fixed;
+            top: ${topY}px;
+            left: ${centerX - 20}px;
+            z-index: 99998;
+            pointer-events: none !important;
+            text-align: center;
+            filter: drop-shadow(0 0 10px rgba(247, 151, 30, 0.5));
+        `;
+        
         document.body.appendChild(this.pointerElement);
     }
     
@@ -398,55 +561,84 @@
     }
     
     setupActionListener(action, targetSelector, stepIndex) {
-        this.removeActionListeners();
-        var self = this;
+        console.log('🎯 Настройка слушателя для:', action);
         
-        this.actionHandler = function(e) {
-            if (self.actionCompleted) return;
-            var target = null;
+        this.removeActionListeners();
+        
+        this.actionHandler = (e) => {
+            if (this.actionCompleted) return;
+            
+            let target = null;
             
             switch(action) {
                 case 'click-pokeball':
                     target = e.target.closest('.pokeball-item[data-type="NORMAL"]');
-                    if (target) return;
+                    if (target) {
+                        console.log('🔄 Клик по покеболу, ждем получения покемона...');
+                        return;
+                    }
                     break;
                 case 'open-collection':
                     target = e.target.closest('#collection-menu');
-                    if (target) return;
+                    if (target) {
+                        console.log('🔄 Клик по коллекции, ждем открытия...');
+                        return;
+                    }
                     break;
                 case 'add-to-team':
+                    // Ищем кнопку "В команду" в клике
                     target = e.target.closest('.add-to-team-btn');
+                    if (target) {
+                        console.log('🔄 Клик по кнопке "В команду"');
+                        // Не завершаем сразу, ждем проверки
+                        return;
+                    }
                     break;
                 case 'click-team-slot':
                     target = e.target.closest('.team-slot:not(.empty)');
                     break;
                 case 'attack-enemy':
                     target = e.target.closest('.enemy-card');
-                    if (target) return;
+                    if (target) {
+                        console.log('🔄 Клик по врагу, ждем атаки...');
+                        return;
+                    }
                     break;
                 case 'open-map':
                     target = e.target.closest('#map-menu');
-                    if (target) return;
+                    if (target) {
+                        console.log('🔄 Клик по карте, ждем открытия...');
+                        return;
+                    }
                     break;
                 case 'travel-to-location':
                     target = e.target.closest('.location-node.available, .location-node');
-                    if (target) return;
+                    if (target) {
+                        console.log('🔄 Клик по локации, ждем изменения...');
+                        return;
+                    }
                     break;
                 default:
                     return;
             }
             
             if (target) {
+                console.log('✅ Действие выполнено!');
                 e.stopPropagation();
-                self.removeActionListeners();
-                self.removePointer();
-                self.actionCompleted = true;
-                self.waitingForAction = false;
-                if (self.game && self.game.uiManager) {
-                    self.game.uiManager.updateUI();
+                
+                this.removeActionListeners();
+                this.removePointer();
+                this.removeHighlightOverlay();
+                
+                this.actionCompleted = true;
+                this.waitingForAction = false;
+                
+                if (this.game && this.game.uiManager) {
+                    this.game.uiManager.updateUI();
                 }
-                setTimeout(function() {
-                    self.goToNextStep();
+                
+                setTimeout(() => {
+                    this.goToNextStep();
                 }, 300);
             }
         };
@@ -462,7 +654,7 @@
     }
     
     goToNextStep() {
-        var nextIndex = this.currentStep + 1;
+        const nextIndex = this.currentStep + 1;
         if (nextIndex < this.steps.length) {
             this.currentStep = nextIndex;
             this.showStep(nextIndex);
@@ -472,6 +664,8 @@
     }
     
     finishTutorial() {
+        console.log('🎉 Завершение обучения');
+        
         if (this.stepTimeout) {
             clearTimeout(this.stepTimeout);
             this.stepTimeout = null;
@@ -487,24 +681,59 @@
         
         this.removeActionListeners();
         this.removePointer();
+        this.removeHighlightOverlay();
         
         this.modal.style.cssText = '';
         this.modal.style.display = 'none';
+        
         this.isTutorialActive = false;
         localStorage.setItem('pokemon_tutorial_completed', 'true');
         
-        if (this.game && this.game.pokemonManager && this.game.pokemonManager.collection.length === 0) {
-            this.game.addStarterPokemon();
+        // Добавляем стартового покемона если нужно
+        if (this.game && this.game.pokemonManager) {
+            if (this.game.pokemonManager.collection.length === 0) {
+                if (typeof this.game.addStarterPokemon === 'function') {
+                    this.game.addStarterPokemon();
+                } else {
+                    this.addDefaultStarterPokemon();
+                }
+            }
         }
+        
         if (this.game && this.game.uiManager) {
             this.game.uiManager.updateUI();
         }
-        if (this.game && this.game.showNotification) {
+        
+        if (this.game && typeof this.game.showNotification === 'function') {
             this.game.showNotification('🎊 Добро пожаловать в мир покемонов!', 'success');
         }
     }
     
+    addDefaultStarterPokemon() {
+        if (!this.game || !this.game.pokemonManager) return;
+        
+        const starterPokemon = {
+            id: 'starter_' + Date.now(),
+            name: 'Пикачу',
+            type: 'Electric',
+            level: 5,
+            hp: 35,
+            maxHp: 35,
+            attack: 10,
+            defense: 8,
+            speed: 12,
+            moves: ['Удар хвостом', 'Электрический разряд'],
+            exp: 0,
+            maxExp: 100
+        };
+        
+        this.game.pokemonManager.collection.push(starterPokemon);
+        console.log('✅ Добавлен стартовый покемон:', starterPokemon.name);
+    }
+    
     resetTutorial() {
+        console.log('🔄 Сброс туториала');
+        
         localStorage.removeItem('pokemon_tutorial_completed');
         
         if (this.stepTimeout) {
@@ -522,6 +751,8 @@
         
         this.removeActionListeners();
         this.removePointer();
+        this.removeHighlightOverlay();
+        
         this.isTutorialActive = true;
         this.currentStep = 0;
         this.waitingForAction = false;
@@ -545,7 +776,7 @@
             padding: 0 !important;
         `;
         
-        var content = this.modal.querySelector('.tutorial-content');
+        const content = this.modal.querySelector('.tutorial-content');
         if (content) {
             content.style.cssText = `
                 background: linear-gradient(135deg, #1a1a2e, #16213e);
@@ -561,29 +792,77 @@
             `;
         }
         
-        var oldSteps = this.modal.querySelectorAll('.tutorial-step');
-        oldSteps.forEach(function(el) { el.remove(); });
+        const oldSteps = this.modal.querySelectorAll('.tutorial-step');
+        oldSteps.forEach(el => el.remove());
         
         this.showStep(0);
     }
     
     setupStyles() {
-        if (document.getElementById('tutorial-styles-final')) return;
-        var style = document.createElement('style');
-        style.id = 'tutorial-styles-final';
-        style.textContent = `
-            .tutorial-step { display: none !important; }
-            .tutorial-step.active { display: block !important; }
-            @keyframes tutorialFadeIn {
-                from { opacity: 0; transform: translateY(10px) scale(0.95); }
-                to { opacity: 1; transform: translateY(0) scale(1); }
-            }
-            @keyframes pointerBounce {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-8px); }
-            }
-        `;
-        document.head.appendChild(style);
+        if (!document.getElementById('tutorial-styles-final')) {
+            const style = document.createElement('style');
+            style.id = 'tutorial-styles-final';
+            style.textContent = `
+                .tutorial-step {
+                    display: none !important;
+                }
+                
+                .tutorial-step.active {
+                    display: block !important;
+                }
+                
+                .tutorial-highlight-target {
+                    animation: elementPulse 1.5s ease-in-out infinite !important;
+                    position: relative;
+                    z-index: 99997;
+                }
+                
+                .tutorial-start-btn:hover,
+                .tutorial-finish-btn:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+                }
+                
+                .pokemon-card .add-to-team-btn:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+                }
+                
+                @keyframes tutorialFadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px) scale(0.95);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+                
+                @keyframes pointerBounce {
+                    0%, 100% {
+                        transform: translateY(0);
+                    }
+                    50% {
+                        transform: translateY(-8px);
+                    }
+                }
+                
+                @keyframes elementPulse {
+                    0%, 100% {
+                        filter: brightness(1);
+                        transform: scale(1);
+                        box-shadow: 0 0 0 rgba(247, 151, 30, 0);
+                    }
+                    50% {
+                        filter: brightness(1.15);
+                        transform: scale(1.03);
+                        box-shadow: 0 0 20px rgba(247, 151, 30, 0.3);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
     }
 }
 
