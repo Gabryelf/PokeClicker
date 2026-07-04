@@ -17,6 +17,7 @@
         var self = this;
         setTimeout(function() {
             self.setupPokeballClickHandlers();
+            self.setupTeamSlotClickHandlers();
             self.initEventListeners();
         }, 500);
     }
@@ -28,19 +29,28 @@
             var modal = document.getElementById(name + '-modal');
             if (modal) {
                 this.modals[name] = modal;
+                
+                // Находим все кнопки закрытия
                 var closeBtns = modal.querySelectorAll('.close');
                 for (var j = 0; j < closeBtns.length; j++) {
                     var btn = closeBtns[j];
-                    btn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        modal.style.display = 'none';
-                    });
+                    // Используем замыкание с правильной ссылкой
+                    (function(currentModal) {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            currentModal.style.display = 'none';
+                        });
+                    })(modal);
                 }
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        modal.style.display = 'none';
-                    }
-                });
+                
+                // Закрытие по клику вне модального окна
+                (function(currentModal) {
+                    currentModal.addEventListener('click', function(e) {
+                        if (e.target === currentModal) {
+                            currentModal.style.display = 'none';
+                        }
+                    });
+                })(modal);
             }
         }
     }
@@ -118,6 +128,23 @@
             };
             item.addEventListener('click', self.pokeballClickHandler);
         });
+    }
+    
+    setupTeamSlotClickHandlers() {
+        var teamSlots = document.getElementById('team-slots');
+        if (teamSlots) {
+            var self = this;
+            teamSlots.removeEventListener('click', self.teamSlotClickHandler);
+            
+            self.teamSlotClickHandler = function(e) {
+                var slot = e.target.closest('.team-slot');
+                if (slot) {
+                    self.showModal('team');
+                }
+            };
+            
+            teamSlots.addEventListener('click', self.teamSlotClickHandler);
+        }
     }
     
     handlePokeballClick(type) {
@@ -282,6 +309,7 @@
         }
         
         this.setupPokeballClickHandlers();
+        this.setupTeamSlotClickHandlers();
     }
     
     async updateTeamDisplay() {
@@ -344,7 +372,6 @@
             collectionGrid.appendChild(card);
         }
         
-        // Добавляем обработчики для кнопок "В команду"
         this.addCollectionButtonHandlers();
     }
     
@@ -374,7 +401,6 @@
             }
         }
         
-        // Создаем карточку с кнопкой "В команду"
         card.innerHTML = `
             <div class="pokemon-image-container">
                 <img src="${img.src}" alt="${pokemon.name}" class="pokemon-image" width="100" height="100">
@@ -408,7 +434,6 @@
                 var pokemonId = parseInt(btn.dataset.pokemonId);
                 var result = self.game.addToTeam(pokemonId);
                 if (result && result.success) {
-                    // Обновляем коллекцию
                     self.createCollectionUI();
                     self.updateUI();
                 }
