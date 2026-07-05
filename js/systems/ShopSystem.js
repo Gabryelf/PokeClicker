@@ -158,9 +158,9 @@
         
         container.innerHTML = '';
         var items = [
-            { type: 'NORMAL', name: 'Покебол', price: CONFIG.SHOP_PRICES.NORMAL_BALL, icon: 'NORMAL' },
-            { type: 'MASTER', name: 'Мастербол', price: CONFIG.SHOP_PRICES.MASTER_BALL, icon: 'MASTER' },
-            { type: 'MYTHIC', name: 'Ультрабол', price: CONFIG.SHOP_PRICES.MYTHIC_BALL, icon: 'MYTHIC' }
+            { type: 'NORMAL', name: 'Покебол', price: CONFIG.SHOP_PRICES.NORMAL_BALL },
+            { type: 'MASTER', name: 'Мастербол', price: CONFIG.SHOP_PRICES.MASTER_BALL },
+            { type: 'MYTHIC', name: 'Ультрабол', price: CONFIG.SHOP_PRICES.MYTHIC_BALL }
         ];
         
         var self = this;
@@ -171,16 +171,34 @@
             var img = document.createElement('img');
             img.className = 'shop-item-image';
             img.alt = item.name;
+            img.width = 80;
+            img.height = 80;
+            img.style.objectFit = 'contain';
             
-            self.imageManager.getPokeballImage(item.icon).then(function(ballImg) {
+            // Загружаем изображение
+            self.imageManager.getPokeballImage(item.type).then(function(ballImg) {
                 img.src = ballImg.src;
             }).catch(function() {
-                img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
+                // Fallback
+                img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Ccircle cx="40" cy="40" r="35" fill="%23ff4444"/%3E%3Ccircle cx="40" cy="40" r="25" fill="%23ffffff"/%3E%3Ccircle cx="40" cy="40" r="15" fill="%23ff4444"/%3E%3C/svg%3E';
             });
             
-            el.innerHTML = '<div class="shop-item-image-container"><img src="' + img.src + '" alt="' + item.name + '" class="shop-item-image"></div>' +
-                '<div class="shop-item-info"><h4>' + item.name + '</h4><div class="price"><i class="fas fa-coins"></i> ' + item.price + '</div></div>' +
-                '<button class="buy-btn" data-type="' + item.type + '">Купить</button>';
+            el.innerHTML = '';
+            var imgContainer = document.createElement('div');
+            imgContainer.className = 'shop-item-image-container';
+            imgContainer.appendChild(img);
+            el.appendChild(imgContainer);
+            
+            var infoDiv = document.createElement('div');
+            infoDiv.className = 'shop-item-info';
+            infoDiv.innerHTML = '<h4>' + item.name + '</h4><div class="price"><i class="fas fa-coins"></i> ' + item.price + '</div>';
+            el.appendChild(infoDiv);
+            
+            var buyBtn = document.createElement('button');
+            buyBtn.className = 'buy-btn';
+            buyBtn.dataset.type = item.type;
+            buyBtn.textContent = 'Купить';
+            el.appendChild(buyBtn);
             
             container.appendChild(el);
         });

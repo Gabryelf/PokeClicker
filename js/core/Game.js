@@ -1,84 +1,233 @@
 /**
- * Главный класс игры
- * @module Game
+ * ОБНОВЛЕННЫЙ ГЛАВНЫЙ КЛАСС ИГРЫ
  */
 
  class PokemonClickerGame {
     constructor() {
+        // Системы
         this.saveManager = null;
         this.pokemonManager = null;
         this.shopSystem = null;
         this.battleSystem = null;
-        this.locationSystem = null;
-        this.heroSystem = null;
-        this.gymSystem = null;
-        this.pokemonCenter = null;
         this.uiManager = null;
+        this.animationManager = null;
+        this.tutorialSystem = null;
+        this.locationSystem = null;
         this.mapModal = null;
         this.questsPanel = null;
-        this.tutorialSystem = null;
+        this.heroSystem = null;
+        this.pokemonCenter = null;
+        this.gymSystem = null;
+        
+        // Менеджер изображений
         this.imageManager = null;
-        this.animationManager = null;
+        
+        // Состояние
+        this.gameState = null;
         this.isInitialized = false;
-        this.notificationQueue = [];
-        this.isShowingNotification = false;
+        
+        // Таймеры
         this.energyRestoreInterval = null;
         this.autoSaveInterval = null;
+        
+        // Очередь уведомлений
+        this.notificationQueue = [];
+        this.isShowingNotification = false;
     }
     
     async init() {
+        console.log('🚀 Инициализация Pokemon Clicker Game...');
+        
         try {
+            // 1. Инициализируем менеджер изображений
             this.imageManager = new ImageManager(IMAGE_CONFIG);
+
+            // 2. Предзагружаем изображения
             await this.imageManager.preloadAll();
+            console.log('✅ Все изображения загружены!');
+
+            // 3. Загружаем сохранение
+            this.saveManager = new SaveManager();
             
-            this.saveManager = new SaveManager(CONFIG.SAVE_KEY);
-            this.animationManager = new AnimationManager();
+            // 4. Инициализируем базовые системы
             this.pokemonManager = new PokemonManager(CONFIG);
+            this.animationManager = new AnimationManager();
+
+            // 5. Инициализируем системы, которые зависят от game
             this.heroSystem = new HeroSystem(this);
             this.shopSystem = new ShopSystem(this.pokemonManager, this, this.imageManager);
             this.locationSystem = new LocationSystem(this);
             this.pokemonCenter = new PokemonCenter(this);
             this.gymSystem = new GymSystem(this);
+
+            // 6. Инициализируем BattleSystem
             this.battleSystem = new BattleSystem(this.pokemonManager, this, this.imageManager);
+
+            // 7. Инициализируем UI системы
             this.uiManager = new UIManager(this, this.imageManager);
             this.mapModal = new MapModal(this, this.locationSystem);
             this.questsPanel = new QuestsPanel(this, this.locationSystem);
+            
+            // 8. Подписываемся на события слияния
+            this.pokemonManager.onMerge((mergeData) => {
+                console.log('🔥 Событие слияния получено!', mergeData);
+                if (this.uiManager) {
+                    this.uiManager.showMergeAnimation(mergeData);
+                }
+                this.showNotification(
+                    `${mergeData.pokemon.name} достиг ${mergeData.newLevel} уровня!`,
+                    'success'
+                );
+                if (this.locationSystem) {
+                    this.locationSystem.updateQuestProgress('merge_pokemon', 1, mergeData);
+                }
+            });
+            
+            // 9. Инициализируем туториал
             this.tutorialSystem = new TutorialSystem(this);
             
-            this.setupEventListeners();
-            this.startEnergyRestore();
-            this.startAutoSave();
-            SoundGenerator.init();
-            
-            this.isInitialized = true;
+            // 10. Обновляем UI
             await this.uiManager.updateUI();
             
+            // 11. Запускаем таймеры
+            this.startEnergyRestore();
+            this.startAutoSave();
+            
+            // 12. Инициализируем звуки (используем SoundGenerator как в старой версии)
+            if (typeof SoundGenerator !== 'undefined') {
+                SoundGenerator.init();
+            }
+            
+            // 13. ОБНОВЛЯЕМ ИЗОБРАЖЕНИЯ ПОКЕБОЛОВ - ВАЖНО!
+            await updatePokeballImages(this.imageManager);
+            
+            // 14. Обновляем хедер
+            this.updateHeaderUI();
+            
+            // 15. Инициализируем обработчики событий UI
+            setTimeout(() => {
+                if (this.uiManager) {
+                    this.uiManager.initEventListeners();
+                }
+            }, 500);
+            
+            // 16. ЕЩЕ РАЗ обновляем покеболы через секунду для надежности
+            setTimeout(async () => {
+                await updatePokeballImages(this.imageManager);
+                console.log('🔄 Повторное обновление покеболов');
+            }, 1000);
+            
+            this.isInitialized = true;
+            console.log('✅ Игра успешно инициализирована!');
+            
         } catch (error) {
-            console.error('Ошибка инициализации игры:', error);
-            this.showErrorNotification(error.message);
+            console.error('❌ Ошибка инициализации игры:', error);
+            this.showErrorMessage(error.message);
+        }
+    }
+
+    updateHeaderUI() {
+        const oldNav = document.querySelector('.nav-buttons');
+        if (oldNav) oldNav.style.display = 'none';
+        
+        const avatarContainer = document.getElementById('avatar-container');
+        if (avatarContainer) avatarContainer.style.display = 'flex';
+    }
+    
+    showErrorMessage(message) {
+        const container = document.getElementById('notification-container');
+        if (container) {
+            const notification = document.createElement('div');
+            notification.className = 'notification error';
+            notification.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i>
+                <div class="notification-content">
+                    <p>Ошибка: ${message}</p>
+                </div>
+            `;
+            container.appendChild(notification);
         }
     }
     
-    setupEventListeners() {
-        var self = this;
-        this.pokemonManager.onMerge(function(mergeData) {
-            if (self.uiManager) {
-                self.uiManager.showMergeAnimation(mergeData);
+    loadGame() {
+        if (!this.saveManager) return;
+        
+        this.gameState = this.saveManager.load();
+        
+        if (this.shopSystem) {
+            this.shopSystem.setMoney(this.gameState.money);
+            this.shopSystem.pokeballs = { ...this.gameState.pokeballs };
+        }
+        
+        if (this.pokemonManager) {
+            this.pokemonManager.collection = [...this.gameState.collection];
+            this.pokemonManager.team = [...this.gameState.team];
+            this.pokemonManager.maxTeamSize = this.gameState.maxTeamSize;
+        }
+        
+        if (this.battleSystem && this.gameState.currentEnemy) {
+            this.battleSystem.enemyLevel = this.gameState.currentEnemy.level;
+        }
+        
+        const hasCompletedTutorial = localStorage.getItem('pokemon_tutorial_completed');
+        if (hasCompletedTutorial && this.pokemonManager && this.pokemonManager.collection.length === 0) {
+            this.addStarterPokemon();
+        }
+        
+        if (this.pokemonManager) {
+            for (const pokemon of this.pokemonManager.collection) {
+                pokemon.isInTeam = this.pokemonManager.team.some(p => p.id === pokemon.id);
             }
-            self.showNotification(
-                mergeData.pokemon.name + ' достиг ' + mergeData.newLevel + ' уровня!',
-                'success'
-            );
-            if (self.locationSystem) {
-                self.locationSystem.updateQuestProgress('merge_pokemon', 1, mergeData);
+        }
+    }
+    
+    addStarterPokemon() {
+        const starterPokemonIds = [1, 2];
+        const randomId = starterPokemonIds[Math.floor(Math.random() * starterPokemonIds.length)];
+        
+        const pokemon = this.pokemonManager.addToCollection(randomId);
+        
+        if (pokemon) {
+            const result = this.pokemonManager.addToTeam(pokemon.id);
+            if (result.success) {
+                console.log('🎁 Добавлен стартовый покемон:', pokemon.name);
+                
+                if (this.uiManager && this.uiManager.showRevealedPokemon) {
+                    this.uiManager.showRevealedPokemon(pokemon);
+                }
             }
-        });
+        }
+    }
+    
+    saveGame() {
+        if (!this.gameState || !this.shopSystem || !this.pokemonManager || !this.battleSystem) return;
+        
+        this.gameState.money = this.shopSystem.money;
+        this.gameState.pokeballs = { ...this.shopSystem.pokeballs };
+        this.gameState.collection = [...this.pokemonManager.collection];
+        this.gameState.team = [...this.pokemonManager.team];
+        this.gameState.maxTeamSize = this.pokemonManager.maxTeamSize;
+        
+        if (this.battleSystem.currentEnemy) {
+            this.gameState.currentEnemy = {
+                id: this.battleSystem.currentEnemy.id,
+                hp: this.battleSystem.currentEnemy.hp,
+                maxHp: this.battleSystem.currentEnemy.maxHp,
+                level: this.battleSystem.enemyLevel
+            };
+        }
+        
+        return this.saveManager.save(this.gameState);
     }
     
     manualAttack() {
+        console.log('Ручная атака');
+        
         if (this.tutorialSystem && this.tutorialSystem.isTutorialActive) {
-            var step = this.tutorialSystem.steps[this.tutorialSystem.currentStep];
-            if (step && step.action !== 'attack-enemy') {
+            const step = this.tutorialSystem.steps[this.tutorialSystem.currentStep];
+            if (step && step.action === 'attack-enemy') {
+                console.log('⚔️ Атака разрешена для туториала');
+            } else {
                 this.showNotification('🎓 Следуй указаниям туториала!', 'warning');
                 return;
             }
@@ -92,60 +241,57 @@
             return;
         }
         
-        var hasEnergy = false;
-        for (var i = 0; i < this.pokemonManager.team.length; i++) {
-            if (this.pokemonManager.team[i].energy > 0) {
-                hasEnergy = true;
-                break;
-            }
-        }
+        const hasEnergy = this.pokemonManager.team.some(p => p.energy > 0);
         if (!hasEnergy) {
-            this.showNotification('У покемонов закончилась энергия!', 'warning');
+            this.showNotification('У покемонов закончилась энергия! Подождите восстановления.', 'warning');
             return;
         }
         
-        var totalDamage = this.pokemonManager.getTeamDamage();
+        let totalDamage = this.pokemonManager.getTeamDamage();
+        
         if (this.heroSystem) {
-            totalDamage = Math.floor(totalDamage * (1 + this.heroSystem.getHeroBonus() / 100));
+            const bonus = this.heroSystem.getHeroBonus() / 100;
+            totalDamage = Math.floor(totalDamage * (1 + bonus));
         }
         
-        var result = this.battleSystem.attackEnemy(totalDamage);
+        const result = this.battleSystem.attackEnemy();
         
         if (result.damage > 0) {
-            this.handleAttackResult(result);
-        }
-        
-        this.uiManager.updateUI();
-        this.saveGame();
-    }
-    
-    handleAttackResult(result) {
-        var enemyCard = document.querySelector('.enemy-card');
-        if (enemyCard && this.animationManager) {
-            var rect = enemyCard.getBoundingClientRect();
-            this.animationManager.createDamageEffect(
-                Math.floor(result.damage),
-                rect.left + rect.width / 2,
-                rect.top + rect.height / 2,
-                result.damage > 50
-            );
-        }
-        
-        SoundGenerator.playAttack();
-        
-        if (this.locationSystem) {
-            this.locationSystem.updateQuestProgress('defeat_enemies', 1);
-            this.locationSystem.updateQuestProgress('team_damage', result.damage);
-        }
-        
-        if (this.heroSystem) {
-            this.heroSystem.addExp(1);
+            const enemyCard = document.querySelector('.enemy-card');
+            if (enemyCard && this.animationManager) {
+                const rect = enemyCard.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+                
+                this.animationManager.createDamageEffect(
+                    Math.floor(result.damage), 
+                    x, 
+                    y, 
+                    result.damage > 50
+                );
+            }
+            
+            if (typeof SoundGenerator !== 'undefined') {
+                SoundGenerator.playAttack();
+            }
+            
+            if (this.locationSystem) {
+                this.locationSystem.updateQuestProgress('defeat_enemies', 1);
+                this.locationSystem.updateQuestProgress('team_damage', result.damage);
+            }
+            
+            if (this.heroSystem) {
+                this.heroSystem.addExp(1);
+            }
         }
         
         if (result.defeated && result.reward) {
             this.shopSystem.addMoney(result.reward);
-            this.showNotification('Победа! +' + result.reward + ' поке-баксов', 'success');
-            SoundGenerator.playVictory();
+            this.showNotification(`Победа! +${result.reward} поке-баксов`, 'success');
+            
+            if (typeof SoundGenerator !== 'undefined') {
+                SoundGenerator.playVictory();
+            }
             
             if (result.enemy && this.animationManager) {
                 this.animationManager.animateEnemyChange(
@@ -158,51 +304,47 @@
                 this.locationSystem.updateQuestProgress('collect_money', result.reward);
             }
         }
+        
+        this.uiManager.updateUI();
+        this.saveGame();
     }
     
     addToTeam(pokemonId) {
-        var result = this.pokemonManager.addToTeam(pokemonId);
+        const result = this.pokemonManager.addToTeam(pokemonId);
+        
         if (result.success) {
             this.uiManager.updateUI();
             this.saveGame();
-            this.showNotification(result.pokemon.name + ' добавлен в команду!', 'success');
-            SoundGenerator.playAddToTeam();
+            this.showNotification(`${result.pokemon.name} добавлен в команду!`, 'success');
+            
+            if (typeof SoundGenerator !== 'undefined') {
+                SoundGenerator.playAddToTeam();
+            }
         } else {
             this.showNotification(result.message, 'error');
         }
+        
         return result;
     }
     
     removeFromTeam(pokemonId) {
-        var pokemon = this.pokemonManager.getPokemonById(pokemonId);
-        var removed = this.pokemonManager.removeFromTeam(pokemonId);
+        const pokemon = this.pokemonManager.getPokemonById(pokemonId);
+        const removed = this.pokemonManager.removeFromTeam(pokemonId);
+        
         if (removed) {
             this.uiManager.updateUI();
             this.saveGame();
             if (pokemon) {
-                this.showNotification(pokemon.name + ' удален из команды', 'info');
+                this.showNotification(`${pokemon.name} удален из команды`, 'info');
             }
         }
+        
         return removed;
     }
     
-    addStarterPokemon() {
-        var starterPokemonIds = [1, 2];
-        var randomId = starterPokemonIds[Math.floor(Math.random() * starterPokemonIds.length)];
-        var pokemon = this.pokemonManager.addToCollection(randomId);
-        if (pokemon) {
-            var result = this.pokemonManager.addToTeam(pokemon.id);
-            if (result.success) {
-                if (this.uiManager && this.uiManager.showRevealedPokemon) {
-                    this.uiManager.showRevealedPokemon(pokemon);
-                }
-            }
-        }
-    }
-    
-    showNotification(message, type) {
-        type = type || 'info';
-        this.notificationQueue.push({ message: message, type: type });
+    showNotification(message, type = 'info') {
+        this.notificationQueue.push({ message, type });
+        
         if (!this.isShowingNotification) {
             this.showNextNotification();
         }
@@ -215,108 +357,100 @@
         }
         
         this.isShowingNotification = true;
-        var item = this.notificationQueue.shift();
-        var message = item.message;
-        var type = item.type;
-        var container = document.getElementById('notification-container');
+        const { message, type } = this.notificationQueue.shift();
+        
+        const container = document.getElementById('notification-container');
         if (!container) return;
         
-        var notification = document.createElement('div');
-        notification.className = 'notification ' + type;
-        var iconMap = {
-            success: 'check-circle',
-            error: 'exclamation-circle',
-            warning: 'exclamation-triangle',
-            info: 'info-circle'
-        };
-        notification.innerHTML = '<i class="fas fa-' + (iconMap[type] || 'info-circle') + '"></i><div class="notification-content"><p>' + message + '</p></div>';
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        
+        let icon = 'info-circle';
+        if (type === 'success') icon = 'check-circle';
+        if (type === 'error') icon = 'exclamation-circle';
+        if (type === 'warning') icon = 'exclamation-triangle';
+        
+        notification.innerHTML = `
+            <i class="fas fa-${icon}"></i>
+            <div class="notification-content">
+                <p>${message}</p>
+            </div>
+        `;
         
         container.appendChild(notification);
         
-        var self = this;
-        setTimeout(function() {
+        setTimeout(() => {
             notification.classList.add('hiding');
-            setTimeout(function() {
-                notification.remove();
-                self.showNextNotification();
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+                this.showNextNotification();
             }, 500);
         }, 3000);
     }
     
-    showErrorNotification(message) {
-        var container = document.getElementById('notification-container');
-        if (container) {
-            var notification = document.createElement('div');
-            notification.className = 'notification error';
-            notification.innerHTML = '<i class="fas fa-exclamation-circle"></i><div class="notification-content"><p>Ошибка: ' + message + '</p></div>';
-            container.appendChild(notification);
-        }
-    }
-    
-    saveGame() {
-        if (!this.saveManager) return;
-        var data = {
-            money: this.shopSystem ? this.shopSystem.money : CONFIG.STARTING_MONEY,
-            pokeballs: this.shopSystem ? this.shopSystem.pokeballs : { ...CONFIG.STARTING_POKEBALLS },
-            collection: this.pokemonManager ? this.pokemonManager.collection : [],
-            team: this.pokemonManager ? this.pokemonManager.team : [],
-            maxTeamSize: this.pokemonManager ? this.pokemonManager.maxTeamSize : CONFIG.MAX_TEAM_SIZE,
-            currentEnemy: this.battleSystem ? this.battleSystem.currentEnemy : null
-        };
-        this.saveManager.save(data);
-    }
-    
-    loadGame() {
-        if (!this.saveManager) return;
-        var data = this.saveManager.load();
-        if (data) {
-            if (this.shopSystem) {
-                this.shopSystem.money = data.money;
-                this.shopSystem.pokeballs = data.pokeballs;
-            }
-            if (this.pokemonManager) {
-                this.pokemonManager.collection = data.collection || [];
-                this.pokemonManager.team = data.team || [];
-                this.pokemonManager.maxTeamSize = data.maxTeamSize || CONFIG.MAX_TEAM_SIZE;
-                for (var i = 0; i < this.pokemonManager.team.length; i++) {
-                    this.pokemonManager.team[i].isInTeam = true;
-                }
-            }
-            if (data.currentEnemy && this.battleSystem) {
-                this.battleSystem.currentEnemy = data.currentEnemy;
-            }
-        }
-    }
-    
     startEnergyRestore() {
-        var self = this;
-        if (this.energyRestoreInterval) clearInterval(this.energyRestoreInterval);
-        this.energyRestoreInterval = setInterval(function() {
-            if (self.pokemonManager) {
-                self.pokemonManager.restoreEnergy();
-                if (self.uiManager) {
-                    self.uiManager.updateUI();
+        if (this.energyRestoreInterval) {
+            clearInterval(this.energyRestoreInterval);
+        }
+        
+        this.energyRestoreInterval = setInterval(() => {
+            if (this.pokemonManager) {
+                this.pokemonManager.restoreEnergy();
+                if (this.uiManager) {
+                    this.uiManager.updateUI();
                 }
             }
         }, 1000);
     }
     
     startAutoSave() {
-        var self = this;
-        if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
-        this.autoSaveInterval = setInterval(function() {
-            self.saveGame();
+        if (this.autoSaveInterval) {
+            clearInterval(this.autoSaveInterval);
+        }
+        
+        this.autoSaveInterval = setInterval(() => {
+            this.saveGame();
+            console.log('💾 Автосохранение выполнено');
         }, CONFIG.AUTO_SAVE_INTERVAL || 30000);
     }
     
     cleanup() {
-        if (this.energyRestoreInterval) clearInterval(this.energyRestoreInterval);
-        if (this.autoSaveInterval) clearInterval(this.autoSaveInterval);
+        if (this.energyRestoreInterval) {
+            clearInterval(this.energyRestoreInterval);
+        }
+        if (this.autoSaveInterval) {
+            clearInterval(this.autoSaveInterval);
+        }
         if (this.battleSystem) {
             this.battleSystem.cleanup();
         }
+        
         this.saveGame();
     }
 }
 
-window.PokemonClickerGame = PokemonClickerGame;
+// Запуск игры
+let game;
+
+window.addEventListener('load', async () => {
+    game = new PokemonClickerGame();
+    await game.init();
+    
+    window.addEventListener('beforeunload', () => {
+        game.cleanup();
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !e.repeat) {
+            e.preventDefault();
+            if (game && game.manualAttack) {
+                game.manualAttack();
+            }
+        }
+    });
+});
+
+window.Game = PokemonClickerGame;
+window.gameInstance = game;

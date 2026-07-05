@@ -20,17 +20,24 @@
 
         const promise = new Promise((resolve, reject) => {
             const img = new Image();
+            // Убираем crossOrigin - он мешает загрузке с GitHub
+            // img.crossOrigin = 'anonymous';
+            
             img.onload = () => {
                 this.cache.set(id, img);
                 this.loadingPromises.delete(id);
                 resolve(img);
             };
+            
             img.onerror = () => {
+                console.warn('⚠️ Ошибка загрузки изображения:', url);
                 const fallbackImg = this.createFallbackImage(id);
                 this.cache.set(id, fallbackImg);
                 this.loadingPromises.delete(id);
                 resolve(fallbackImg);
             };
+            
+            // Добавляем таймаут для загрузки
             img.src = url;
         });
 
@@ -43,13 +50,43 @@
         canvas.width = 128;
         canvas.height = 128;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#6C5CE7';
-        ctx.fillRect(0, 0, 128, 128);
+        
+        let color = '#6C5CE7';
+        let text = '?';
+        
+        if (id.includes('NORMAL')) {
+            color = '#ff4444';
+            text = 'PB';
+        } else if (id.includes('MASTER')) {
+            color = '#9c27b0';
+            text = 'MB';
+        } else if (id.includes('MYTHIC')) {
+            color = '#ffd700';
+            text = 'UB';
+        } else if (id.includes('pokemon')) {
+            color = '#4CAF50';
+            text = 'PK';
+        } else if (id.includes('enemy')) {
+            color = '#f44336';
+            text = 'EN';
+        }
+        
+        // Рисуем круг
+        ctx.beginPath();
+        ctx.arc(64, 64, 60, 0, 2 * Math.PI);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Рисуем текст
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 48px Inter, Arial';
+        ctx.font = 'bold 48px Arial, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('?', 64, 64);
+        ctx.fillText(text, 64, 64);
+        
         const img = new Image();
         img.src = canvas.toDataURL();
         return img;
@@ -93,40 +130,72 @@ class ImageManager {
 
     async preloadAll() {
         const promises = [];
-        for (const [id] of Object.entries(this.config.POKEMON_IMAGES)) {
-            promises.push(this.getPokemonImage(parseInt(id)).catch(() => {}));
-        }
-        for (const [key] of Object.entries(this.config.ENEMY_IMAGES)) {
-            promises.push(this.getEnemyImage(key).catch(() => {}));
-        }
+        
+        // Загружаем покеболы в первую очередь
         for (const [type] of Object.entries(this.config.POKEBALL_IMAGES)) {
             promises.push(this.getPokeballImage(type).catch(() => {}));
         }
+        
+        for (const [id] of Object.entries(this.config.POKEMON_IMAGES)) {
+            promises.push(this.getPokemonImage(parseInt(id)).catch(() => {}));
+        }
+        
+        for (const [key] of Object.entries(this.config.ENEMY_IMAGES)) {
+            promises.push(this.getEnemyImage(key).catch(() => {}));
+        }
+        
         await Promise.all(promises);
         this.isReady = true;
+        console.log('✅ Все изображения загружены!');
     }
 
     getCachedPokemonImage(pokemonId) {
         return this.cache.getCached('pokemon_' + pokemonId);
     }
+    
+    getCachedPokeballImage(type) {
+        return this.cache.getCached('pokeball_' + type);
+    }
 }
 
-// Функция для обновления изображений покеболов
-function updatePokeballImages(imageManager) {
+// Функция для обновления изображений покеболов в хедере
+async function updatePokeballImages(imageManager) {
+    console.log('🔄 Обновление изображений покеболов...');
+    
     const pokeballItems = document.querySelectorAll('.pokeball-item');
-    pokeballItems.forEach(function(item) {
+    
+    for (const item of pokeballItems) {
         const type = item.dataset.type;
         const img = item.querySelector('img');
-        if (!img || !type) return;
-        imageManager.getPokeballImage(type).then(function(pokeballImg) {
-            img.src = pokeballImg.src;
+        if (!img || !type) {
+            console.warn('⚠️ Нет изображения или типа для покебола');
+            continue;
+        }
+        
+        try {
+            const pokeballImg = await imageManager.getPokeballImage(type);
+            if (pokeballImg && pokeballImg.src) {
+                img.src = pokeballImg.src;
+                img.style.width = '32px';
+                img.style.height = '32px';
+                img.style.objectFit = 'contain';
+                img.style.display = 'block';
+                console.log(`✅ Загружено изображение для ${type}:`, img.src);
+            }
+        } catch (e) {
+            console.error(`❌ Ошибка обновления покебола ${type}:`, e);
+            // Запасной вариант - используем PokeAPI
+            const fallbackUrls = {
+                'NORMAL': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png',
+                'MASTER': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png',
+                'MYTHIC': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png'
+            };
+            img.src = fallbackUrls[type] || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
             img.style.width = '32px';
             img.style.height = '32px';
             img.style.objectFit = 'contain';
-        }).catch(function() {
-            img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
-        });
-    });
+        }
+    }
 }
 
 // Делаем глобально доступным

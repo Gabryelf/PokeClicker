@@ -114,6 +114,7 @@
         'gloom': 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/44.png'
     },
     
+    //ССЫЛКИ НА ПОКЕБОЛЫ
     POKEBALL_IMAGES: {
         NORMAL: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/pakeballs/normalball.png',
         MASTER: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/pakeballs/masterball.png',
