@@ -1,8 +1,9 @@
-// ==============================
-// ТУТОРИАЛ В УГЛУ ЭКРАНА - ПОЛНАЯ ВЕРСИЯ
-// ==============================
+/**
+ * Система туториала - полностью исправленная версия
+ * @module TutorialSystem
+ */
 
-class TutorialSystem {
+ class TutorialSystem {
     constructor(game) {
         this.game = game;
         this.currentStep = 0;
@@ -16,81 +17,13 @@ class TutorialSystem {
         this.attackCheckInterval = null;
         this.lastEnemyHp = null;
         this.lastLocation = null;
+        this.waitingForAction = false;
+        this.actionCompleted = false;
+        this.steps = [];
+        this.isWaitingForTeamAdd = false;
         
-        this.steps = [
-            {
-                message: '👋 Привет! Нажми "Начать", чтобы начать обучение',
-                action: 'start',
-                target: null,
-                hint: null,
-                check: null,
-                showButton: true
-            },
-            {
-                message: '🎯 Кликни на <b style="color:#ff6b6b;">красный покебол</b> вверху',
-                action: 'click-pokeball',
-                target: '.pokeball-item[data-type="NORMAL"]',
-                hint: 'Красный покебол',
-                check: 'pokemon-received',
-                showButton: false
-            },
-            {
-                message: '✨ Открой <b style="color:#f7971e;">коллекцию</b> (иконка дракона)',
-                action: 'open-collection',
-                target: '#collection-menu',
-                hint: 'Кнопка коллекции',
-                check: 'collection-opened',
-                showButton: false
-            },
-            {
-                message: '📦 Нажми <b style="color:#4CAF50;">"В команду"</b> под покемоном',
-                action: 'add-to-team',
-                target: '.add-to-team-btn',
-                hint: 'Кнопка "В команду"',
-                check: 'pokemon-in-team',
-                showButton: false
-            },
-            {
-                message: '✅ Кликни на <b style="color:#4CAF50;">покемона внизу</b>',
-                action: 'click-team-slot',
-                target: '.team-slot:not(.empty)',
-                hint: 'Слот покемона',
-                check: null,
-                showButton: false
-            },
-            {
-                message: '⚔️ <b style="color:#ff6b6b;">Атакуй</b> врага! Кликни на него',
-                action: 'attack-enemy',
-                target: '.enemy-card',
-                hint: 'Карточка врага',
-                check: 'attack-done',
-                showButton: false
-            },
-            {
-                message: '💥 Открой <b style="color:#f7971e;">карту</b> (иконка карты)',
-                action: 'open-map',
-                target: '#map-menu',
-                hint: 'Кнопка карты',
-                check: 'map-opened',
-                showButton: false
-            },
-            {
-                message: '🗺️ Выбери <b style="color:#4CAF50;">любую локацию</b> на карте',
-                action: 'travel-to-location',
-                target: '.location-node.available',
-                hint: 'Доступная локация',
-                check: 'location-changed',
-                showButton: false
-            },
-            {
-                message: '🎉 Поздравляю! Ты освоил основы!',
-                action: null,
-                target: null,
-                hint: null,
-                check: null,
-                showButton: true
-            }
-        ];
+        // Определяем шаги в зависимости от версии игры
+        this.initializeSteps();
         
         if (!this.modal) {
             console.error('❌ Модальное окно туториала не найдено');
@@ -99,6 +32,93 @@ class TutorialSystem {
         
         this.init();
         this.setupStyles();
+    }
+    
+    initializeSteps() {
+        this.steps = [
+            {
+                message: '👋 Привет! Нажми "Начать", чтобы начать обучение',
+                action: 'start',
+                target: null,
+                hint: null,
+                check: null,
+                showButton: true,
+                isStart: true
+            },
+            {
+                message: '🎯 Кликни на <b style="color:#ff6b6b;">красный покебол</b> вверху',
+                action: 'click-pokeball',
+                target: '.pokeball-item[data-type="NORMAL"]',
+                hint: 'Красный покебол',
+                check: 'pokemon-received',
+                showButton: false,
+                isStart: false
+            },
+            {
+                message: '✨ Открой <b style="color:#f7971e;">коллекцию</b> (иконка дракона)',
+                action: 'open-collection',
+                target: '#collection-menu',
+                hint: 'Кнопка коллекции',
+                check: 'collection-opened',
+                showButton: false,
+                isStart: false
+            },
+            {
+                message: '📦 Нажми <b style="color:#4CAF50;">"В команду"</b> под покемоном',
+                action: 'add-to-team',
+                target: '.add-to-team-btn',
+                hint: 'Кнопка "В команду"',
+                check: 'pokemon-in-team',
+                showButton: false,
+                isStart: false
+            },
+            {
+                message: '✅ Кликни на <b style="color:#4CAF50;">покемона внизу</b>',
+                action: 'click-team-slot',
+                target: '.team-slot:not(.empty)',
+                hint: 'Слот покемона',
+                check: null,
+                showButton: false,
+                isStart: false
+            },
+            {
+                message: '⚔️ <b style="color:#ff6b6b;">Атакуй</b> врага! Кликни на него',
+                action: 'attack-enemy',
+                target: '.enemy-card',
+                hint: 'Карточка врага',
+                check: 'attack-done',
+                showButton: false,
+                isStart: false
+            },
+            {
+                message: '💥 Открой <b style="color:#f7971e;">карту</b> (иконка карты)',
+                action: 'open-map',
+                target: '#map-menu',
+                hint: 'Кнопка карты',
+                check: 'map-opened',
+                showButton: false,
+                isStart: false
+            },
+            {
+                message: '🗺️ Выбери <b style="color:#4CAF50;">любую локацию</b> на карте',
+                action: 'travel-to-location',
+                target: '.location-node.available',
+                hint: 'Доступная локация',
+                check: 'location-changed',
+                showButton: false,
+                isStart: false
+            },
+            {
+                message: '🎉 Поздравляю! Ты освоил основы!',
+                action: null,
+                target: null,
+                hint: null,
+                check: null,
+                showButton: true,
+                isStart: false,
+                isFinish: true
+            }
+        ];
     }
     
     init() {
@@ -196,8 +216,23 @@ class TutorialSystem {
             html += `<div style="text-align: center; color: #ffd700; font-size: 0.8rem; margin-top: 8px;">💡 ${step.hint}</div>`;
         }
         
+        // Добавляем индикатор прогресса
+        html += `
+            <div style="text-align: center; margin-top: 10px; display: flex; justify-content: center; gap: 4px;">
+                ${this.steps.map((_, i) => `
+                    <div style="
+                        width: 6px;
+                        height: 6px;
+                        border-radius: 50%;
+                        background: ${i <= index ? '#4CAF50' : '#333'};
+                        transition: all 0.3s ease;
+                    "></div>
+                `).join('')}
+            </div>
+        `;
+        
         if (step.showButton) {
-            if (index === 0) {
+            if (step.isStart) {
                 html += `
                     <div style="text-align: center; margin-top: 12px;">
                         <button class="tutorial-start-btn" style="
@@ -216,7 +251,7 @@ class TutorialSystem {
                         </button>
                     </div>
                 `;
-            } else if (index === this.steps.length - 1) {
+            } else if (step.isFinish) {
                 html += `
                     <div style="text-align: center; margin-top: 12px;">
                         <button class="tutorial-finish-btn" style="
@@ -344,12 +379,17 @@ class TutorialSystem {
     
     checkPokemonInTeam() {
         console.log('🔍 Проверка добавления в команду...');
+        let previousTeamSize = this.game.pokemonManager.team ? this.game.pokemonManager.team.length : 0;
+        
         this.checkInterval = setInterval(() => {
             if (!this.game || !this.game.pokemonManager) return;
             
             const team = this.game.pokemonManager.team;
-            if (team && team.length > 0) {
-                console.log('✅ Покемон добавлен в команду!');
+            const currentTeamSize = team ? team.length : 0;
+            
+            // Проверяем, увеличился ли размер команды
+            if (currentTeamSize > previousTeamSize) {
+                console.log('✅ Покемон добавлен в команду! Размер команды:', currentTeamSize);
                 clearInterval(this.checkInterval);
                 this.checkInterval = null;
                 
@@ -359,11 +399,19 @@ class TutorialSystem {
                 this.removeHighlightOverlay();
                 this.removeActionListeners();
                 
+                // Закрываем коллекцию, если она открыта
+                const collectionModal = document.getElementById('collection-modal');
+                if (collectionModal && collectionModal.style.display === 'flex') {
+                    collectionModal.style.display = 'none';
+                }
+                
                 setTimeout(() => {
                     this.goToNextStep();
                 }, 500);
             }
-        }, 500);
+            
+            previousTeamSize = currentTeamSize;
+        }, 300);
     }
     
     checkAttackDone() {
@@ -423,7 +471,6 @@ class TutorialSystem {
         console.log('🔍 Проверка изменения локации...');
         this.lastLocation = null;
         
-        // Сохраняем текущую локацию
         if (this.game && this.game.locationSystem) {
             this.lastLocation = this.game.locationSystem.currentLocation;
         }
@@ -433,7 +480,6 @@ class TutorialSystem {
             
             const currentLocation = this.game.locationSystem.currentLocation;
             
-            // Если локация изменилась
             if (this.lastLocation !== null && currentLocation !== this.lastLocation) {
                 console.log('✅ Локация изменена! Было:', this.lastLocation, 'Стало:', currentLocation);
                 clearInterval(this.checkInterval);
@@ -540,7 +586,13 @@ class TutorialSystem {
                     }
                     break;
                 case 'add-to-team':
+                    // Ищем кнопку "В команду" в клике
                     target = e.target.closest('.add-to-team-btn');
+                    if (target) {
+                        console.log('🔄 Клик по кнопке "В команду"');
+                        // Не завершаем сразу, ждем проверки
+                        return;
+                    }
                     break;
                 case 'click-team-slot':
                     target = e.target.closest('.team-slot:not(.empty)');
@@ -637,17 +689,46 @@ class TutorialSystem {
         this.isTutorialActive = false;
         localStorage.setItem('pokemon_tutorial_completed', 'true');
         
-        if (this.game && this.game.pokemonManager && this.game.pokemonManager.collection.length === 0) {
-            this.game.addStarterPokemon();
+        // Добавляем стартового покемона если нужно
+        if (this.game && this.game.pokemonManager) {
+            if (this.game.pokemonManager.collection.length === 0) {
+                if (typeof this.game.addStarterPokemon === 'function') {
+                    this.game.addStarterPokemon();
+                } else {
+                    this.addDefaultStarterPokemon();
+                }
+            }
         }
         
         if (this.game && this.game.uiManager) {
             this.game.uiManager.updateUI();
         }
         
-        if (this.game && this.game.showNotification) {
+        if (this.game && typeof this.game.showNotification === 'function') {
             this.game.showNotification('🎊 Добро пожаловать в мир покемонов!', 'success');
         }
+    }
+    
+    addDefaultStarterPokemon() {
+        if (!this.game || !this.game.pokemonManager) return;
+        
+        const starterPokemon = {
+            id: 'starter_' + Date.now(),
+            name: 'Пикачу',
+            type: 'Electric',
+            level: 5,
+            hp: 35,
+            maxHp: 35,
+            attack: 10,
+            defense: 8,
+            speed: 12,
+            moves: ['Удар хвостом', 'Электрический разряд'],
+            exp: 0,
+            maxExp: 100
+        };
+        
+        this.game.pokemonManager.collection.push(starterPokemon);
+        console.log('✅ Добавлен стартовый покемон:', starterPokemon.name);
     }
     
     resetTutorial() {
@@ -740,6 +821,11 @@ class TutorialSystem {
                 .tutorial-finish-btn:hover {
                     transform: scale(1.05);
                     box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+                }
+                
+                .pokemon-card .add-to-team-btn:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
                 }
                 
                 @keyframes tutorialFadeIn {

@@ -1,0 +1,166 @@
+/**
+ * Основные стили
+ * @module main.css
+ */
+
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+ :root {
+     --bg-primary: #0B0E14;
+     --bg-secondary: #121620;
+     --bg-tertiary: #1A1F2C;
+     --bg-card: rgba(26, 31, 44, 0.7);
+     --accent-primary: #6C5CE7;
+     --accent-secondary: #A463F5;
+     --accent-tertiary: #FF6B6B;
+     --accent-success: #00B894;
+     --accent-warning: #FDCB6E;
+     --text-primary: #FFFFFF;
+     --text-secondary: #A0A8C0;
+     --text-muted: #6A7187;
+     --glow-primary: 0 0 20px rgba(108, 92, 231, 0.3);
+     --glow-success: 0 0 20px rgba(0, 184, 148, 0.3);
+     --border-radius-lg: 32px;
+     --border-radius-md: 24px;
+     --border-radius-sm: 16px;
+     --border-radius-xs: 12px;
+     --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.25);
+ }
+ 
+ * {
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+ }
+ 
+ body {
+     font-family: 'Inter', sans-serif;
+     background: var(--bg-primary);
+     min-height: 100vh;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     padding: 16px;
+     color: var(--text-primary);
+     position: relative;
+     overflow: hidden;
+ }
+ 
+ body::before {
+     content: '';
+     position: fixed;
+     top: -50%;
+     left: -50%;
+     width: 200%;
+     height: 200%;
+     background: 
+         radial-gradient(circle at 30% 40%, rgba(108, 92, 231, 0.15) 0%, transparent 40%),
+         radial-gradient(circle at 70% 60%, rgba(164, 99, 245, 0.15) 0%, transparent 40%),
+         radial-gradient(circle at 50% 50%, rgba(0, 184, 148, 0.1) 0%, transparent 50%);
+     animation: rotate 30s linear infinite;
+     z-index: 0;
+ }
+ 
+ @keyframes rotate {
+     from { transform: rotate(0deg); }
+     to { transform: rotate(360deg); }
+ }
+ 
+ .container {
+     position: relative;
+     z-index: 1;
+     width: 100%;
+     max-width: 1400px;
+     height: 95vh;
+     background: rgba(18, 22, 32, 0.6);
+     backdrop-filter: blur(20px) saturate(180%);
+     -webkit-backdrop-filter: blur(20px) saturate(180%);
+     border-radius: var(--border-radius-lg);
+     border: 1px solid rgba(255, 255, 255, 0.05);
+     box-shadow: var(--shadow-xl);
+     display: flex;
+     flex-direction: column;
+     overflow: hidden;
+ }
+ 
+ main {
+     flex: 1;
+     display: flex;
+     flex-direction: column;
+     padding: 24px 32px;
+     overflow: hidden;
+ }
+ 
+ .battle-area {
+     flex: 1;
+     display: flex;
+     flex-direction: column;
+     gap: 20px;
+     overflow: hidden;
+ }
+ 
+ /* Утилиты */
+ .hidden {
+     display: none !important;
+ }
+ 
+ .flex-center {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+ }
+ 
+ .text-center {
+     text-align: center;
+ }
+ 
+ /* Стили скроллбара */
+ ::-webkit-scrollbar {
+     width: 6px;
+ }
+ 
+ ::-webkit-scrollbar-track {
+     background: rgba(255, 255, 255, 0.02);
+     border-radius: 6px;
+ }
+ 
+ ::-webkit-scrollbar-thumb {
+     background: rgba(255, 255, 255, 0.1);
+     border-radius: 6px;
+ }
+ 
+ ::-webkit-scrollbar-thumb:hover {
+     background: rgba(255, 255, 255, 0.2);
+ }
+ 
+ /* Адаптивность */
+ @media (max-width: 1024px) {
+     main {
+         padding: 16px 20px;
+     }
+ }
+ 
+ @media (max-width: 768px) {
+     body {
+         padding: 8px;
+     }
+     .container {
+         height: 98vh;
+         border-radius: var(--border-radius-md);
+     }
+     main {
+         padding: 12px 16px;
+     }
+     .battle-area {
+         gap: 12px;
+     }
+ }
+ 
+ @media (max-width: 480px) {
+     main {
+         padding: 8px 12px;
+     }
+     .battle-area {
+         gap: 8px;
+     }
+ }

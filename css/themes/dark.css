@@ -1,0 +1,186 @@
+/**
+ * Темная тема
+ * @module dark.css
+ */
+
+ :root {
+    --bg-primary: #0B0E14;
+    --bg-secondary: #121620;
+    --bg-tertiary: #1A1F2C;
+    --bg-card: rgba(26, 31, 44, 0.7);
+    --text-primary: #FFFFFF;
+    --text-secondary: #A0A8C0;
+    --text-muted: #6A7187;
+}
+
+body {
+    background: var(--bg-primary);
+}
+
+.container {
+    background: rgba(18, 22, 32, 0.6);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Карточки */
+.pokemon-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.pokemon-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-secondary);
+}
+
+/* Модальные окна */
+.modal {
+    background: rgba(0, 0, 0, 0.95);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, rgba(26, 31, 44, 0.98), rgba(18, 22, 32, 0.98));
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.modal-header {
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Скроллбар */
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Кнопки */
+.nav-btn {
+    color: var(--text-muted);
+}
+
+.nav-btn:hover {
+    color: var(--accent-primary);
+    background: rgba(108, 92, 231, 0.1);
+}
+
+.nav-btn.active {
+    color: var(--accent-primary);
+    background: rgba(108, 92, 231, 0.15);
+}
+
+/* Уведомления */
+.notification {
+    background: rgba(18, 22, 32, 0.98);
+}
+
+.notification.success {
+    background: linear-gradient(135deg, rgba(0, 184, 148, 0.2), rgba(18, 22, 32, 0.98));
+}
+
+.notification.error {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(18, 22, 32, 0.98));
+}
+
+.notification.warning {
+    background: linear-gradient(135deg, rgba(253, 203, 110, 0.2), rgba(18, 22, 32, 0.98));
+}
+
+/* Покеболы */
+.pokeball-item {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.03);
+}
+
+.pokeball-item:hover {
+    background: rgba(108, 92, 231, 0.1);
+    border-color: var(--accent-primary);
+}
+
+/* Команда */
+.team-slot {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.03);
+}
+
+.team-slot:not(.empty):hover {
+    background: rgba(108, 92, 231, 0.1);
+    border-color: var(--accent-primary);
+}
+
+.team-slot.empty {
+    background: rgba(255, 255, 255, 0.01);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Враг */
+.enemy-card {
+    background: linear-gradient(135deg, rgba(26, 31, 44, 0.8), rgba(18, 22, 32, 0.9));
+    border-color: rgba(255, 255, 255, 0.03);
+}
+
+.enemy-hp {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Магазин */
+.shop-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Квесты */
+.quests-panel {
+    background: linear-gradient(135deg, rgba(26, 31, 44, 0.98), rgba(18, 22, 32, 0.98));
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.quest-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.quest-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.quest-item.completed {
+    background: rgba(0, 184, 148, 0.1);
+}
+
+/* Герои */
+.hero-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.hero-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Улучшения */
+.upgrade-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.upgrade-item.purchased {
+    background: rgba(0, 184, 148, 0.1);
+}
+
+/* Арена */
+.gym-battle-area {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.gym-rewards {
+    background: rgba(255, 215, 0, 0.1);
+}

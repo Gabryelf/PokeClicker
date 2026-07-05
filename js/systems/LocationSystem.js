@@ -1,19 +1,19 @@
-// ==============================
-// СИСТЕМА ЛОКАЦИЙ И КАРТЫ
-// ==============================
+/**
+ * Система локаций
+ * @module LocationSystem
+ */
 
-class LocationSystem {
+ class LocationSystem {
     constructor(game) {
         this.game = game;
         this.currentLocation = 'pallet_town';
         this.availableLocations = ['pallet_town'];
         this.transitionInProgress = false;
         this.transitionEndTime = null;
-        this.transitionTarget = null; // Добавляем target для перехода
+        this.transitionTarget = null;
         this.dailyQuests = {};
         this.lastQuestUpdate = null;
         
-        // Карта региона Канто с типами локаций
         this.locations = {
             'pallet_town': {
                 name: 'Паллет Таун',
@@ -42,7 +42,7 @@ class LocationSystem {
             'viridian_city': {
                 name: 'Веридиан Сити',
                 description: 'Город с видом на вечнозеленый лес',
-                neighbors: ['route_1', 'route_2', 'route_22'],
+                neighbors: ['route_1', 'route_2'],
                 icon: '🏙️',
                 type: 'city',
                 hasPokemonCenter: true,
@@ -116,7 +116,7 @@ class LocationSystem {
             'cerulean_city': {
                 name: 'Церулин Сити',
                 description: 'Город с красивыми фонтанами',
-                neighbors: ['mt_moon', 'route_4', 'route_5', 'route_9'],
+                neighbors: ['mt_moon', 'route_4', 'route_5'],
                 icon: '💧',
                 type: 'city',
                 hasPokemonCenter: true,
@@ -217,7 +217,6 @@ class LocationSystem {
             }
         };
         
-        // Квесты для локаций
         this.questTemplates = [
             {
                 id: 'catch_pokemon',
@@ -261,53 +260,29 @@ class LocationSystem {
             }
         ];
         
-        // Загружаем прогресс вместо вызова init
         this.loadProgress();
         this.updateDailyQuests();
-        
-        // Проверяем, не истек ли таймер перехода
-        if (this.transitionEndTime) {
-            const now = Date.now();
-            if (now >= this.transitionEndTime) {
-                this.completeTransition();
-            }
-        }
-    }
-    
-    init() {
-        this.loadProgress();
-        this.updateDailyQuests();
-        
-        // Проверяем, не истек ли таймер перехода
-        if (this.transitionEndTime) {
-            const now = Date.now();
-            if (now >= this.transitionEndTime) {
-                this.completeTransition();
-            }
-        }
     }
     
     loadProgress() {
-        const saved = localStorage.getItem('pokemon_location_progress');
+        var saved = localStorage.getItem('pokemon_location_progress');
         if (saved) {
             try {
-                const data = JSON.parse(saved);
+                var data = JSON.parse(saved);
                 this.currentLocation = data.currentLocation || 'pallet_town';
                 this.availableLocations = data.availableLocations || ['pallet_town'];
                 this.transitionEndTime = data.transitionEndTime || null;
                 this.lastQuestUpdate = data.lastQuestUpdate || null;
                 this.dailyQuests = data.dailyQuests || {};
-                
-                // Обновляем доступные локации на основе текущей
                 this.updateAvailableLocations();
             } catch (e) {
-                console.error('Ошибка загрузки прогресса локаций:', e);
+                // Игнорируем ошибки
             }
         }
     }
     
     saveProgress() {
-        const data = {
+        var data = {
             currentLocation: this.currentLocation,
             availableLocations: this.availableLocations,
             transitionEndTime: this.transitionEndTime,
@@ -318,125 +293,124 @@ class LocationSystem {
     }
     
     updateAvailableLocations() {
-        const current = this.locations[this.currentLocation];
+        var current = this.locations[this.currentLocation];
         if (current) {
-            current.neighbors.forEach(neighbor => {
-                if (!this.availableLocations.includes(neighbor)) {
+            for (var i = 0; i < current.neighbors.length; i++) {
+                var neighbor = current.neighbors[i];
+                if (this.availableLocations.indexOf(neighbor) === -1) {
                     this.availableLocations.push(neighbor);
                 }
-            });
+            }
         }
     }
     
     canTravelTo(locationId) {
-        // Проверяем, доступна ли локация
-        if (!this.availableLocations.includes(locationId)) {
+        if (this.availableLocations.indexOf(locationId) === -1) {
             return { allowed: false, reason: 'Локация еще не открыта' };
         }
-        
-        // Проверяем, не в процессе ли перехода
         if (this.transitionInProgress) {
             return { allowed: false, reason: 'Переход уже выполняется' };
         }
-        
-        // Проверяем, соседняя ли это локация
-        const current = this.locations[this.currentLocation];
-        if (!current.neighbors.includes(locationId)) {
+        var current = this.locations[this.currentLocation];
+        if (current.neighbors.indexOf(locationId) === -1) {
             return { allowed: false, reason: 'Можно переходить только в соседние локации' };
         }
-        
         return { allowed: true };
     }
     
     startTravel(locationId) {
-        const check = this.canTravelTo(locationId);
+        var check = this.canTravelTo(locationId);
         if (!check.allowed) {
             this.game.showNotification(check.reason, 'warning');
             return false;
         }
         
-        // Начинаем переход (15 секунд)
-        const travelTime = 15 * 1000; // 15 секунд для демонстрации, можно изменить
+        var travelTime = 15 * 1000;
         this.transitionInProgress = true;
         this.transitionEndTime = Date.now() + travelTime;
+        this.transitionTarget = locationId;
         
-        // Сохраняем данные перехода
         this.saveProgress();
+        this.game.showNotification('Переход в ' + this.locations[locationId].name + '... ' + (travelTime/1000) + ' сек.', 'info');
         
-        // Показываем уведомление
-        this.game.showNotification(`Переход в ${this.locations[locationId].name}... ${travelTime/1000} сек.`, 'info');
-        
-        // Запускаем таймер
-        setTimeout(() => {
-            this.completeTransition(locationId);
+        var self = this;
+        setTimeout(function() {
+            self.completeTransition(locationId);
         }, travelTime);
         
         return true;
     }
     
-    completeTransition(locationId = null) {
+    completeTransition(locationId) {
         if (locationId) {
             this.currentLocation = locationId;
             this.updateAvailableLocations();
         }
-        
         this.transitionInProgress = false;
         this.transitionEndTime = null;
+        this.transitionTarget = null;
         
-        // Сохраняем прогресс
         this.saveProgress();
-        
-        // Обновляем квесты для новой локации
         this.updateDailyQuests();
+        this.game.showNotification('Вы прибыли в ' + this.locations[this.currentLocation].name + '!', 'success');
         
-        // Показываем уведомление
-        this.game.showNotification(`Вы прибыли в ${this.locations[this.currentLocation].name}!`, 'success');
-        
-        // Обновляем UI
         if (this.game.uiManager) {
             this.game.uiManager.updateLocationUI();
         }
     }
     
     updateDailyQuests() {
-        const now = new Date();
-        const today = now.toDateString();
+        var now = new Date();
+        var today = now.toDateString();
         
-        // Проверяем, нужно ли обновить квесты
         if (this.lastQuestUpdate !== today) {
-            // Генерируем новые квесты для всех локаций
             this.generateDailyQuests();
             this.lastQuestUpdate = today;
             this.saveProgress();
         }
         
-        // Обновляем прогресс текущей локации, если нужно
         if (!this.dailyQuests[this.currentLocation]) {
             this.generateQuestsForLocation(this.currentLocation);
         }
     }
     
     generateDailyQuests() {
-        Object.keys(this.locations).forEach(locationId => {
-            this.generateQuestsForLocation(locationId);
-        });
+        var locations = Object.keys(this.locations);
+        for (var i = 0; i < locations.length; i++) {
+            this.generateQuestsForLocation(locations[i]);
+        }
     }
     
     generateQuestsForLocation(locationId) {
-        const location = this.locations[locationId];
-        const questCount = location.questCount || 3;
+        var location = this.locations[locationId];
+        var questCount = location.questCount || 3;
         
-        // Выбираем случайные квесты
-        const quests = [];
-        const shuffled = [...this.questTemplates].sort(() => 0.5 - Math.random());
+        var quests = [];
+        var shuffled = this.questTemplates.slice();
+        for (var i = shuffled.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = shuffled[i];
+            shuffled[i] = shuffled[j];
+            shuffled[j] = temp;
+        }
         
-        for (let i = 0; i < questCount; i++) {
-            if (i < shuffled.length) {
-                const template = { ...shuffled[i] };
-                quests.push({
-                    ...template,
-                    id: `${template.id}_${locationId}_${Date.now()}_${i}`,
+        for (var k = 0; k < questCount; k++) {
+            if (k < shuffled.length) {
+                var template = {
+                    id: shuffled[k].id,
+                    name: shuffled[k].name,
+                    description: shuffled[k].description,
+                    reward: shuffled[k].reward,
                     progress: 0,
+                    target: shuffled[k].target
+                };
+                quests.push({
+                    id: template.id + '_' + locationId + '_' + Date.now() + '_' + k,
+                    name: template.name,
+                    description: template.description,
+                    reward: template.reward,
+                    progress: 0,
+                    target: template.target,
                     completed: false,
                     claimed: false
                 });
@@ -450,23 +424,24 @@ class LocationSystem {
         return this.dailyQuests[this.currentLocation] || [];
     }
     
-    updateQuestProgress(eventType, amount = 1, data = {}) {
-        const quests = this.getCurrentQuests();
-        let updated = false;
+    updateQuestProgress(eventType, amount, data) {
+        amount = amount || 1;
+        var quests = this.getCurrentQuests();
+        var updated = false;
         
-        quests.forEach(quest => {
-            if (quest.completed || quest.claimed) return;
+        for (var i = 0; i < quests.length; i++) {
+            var quest = quests[i];
+            if (quest.completed || quest.claimed) continue;
             
-            if (quest.id.startsWith(eventType)) {
+            if (quest.id.indexOf(eventType) === 0) {
                 quest.progress = Math.min(quest.progress + amount, quest.target);
-                
                 if (quest.progress >= quest.target && !quest.completed) {
                     quest.completed = true;
-                    this.game.showNotification(`Квест выполнен: ${quest.name}!`, 'success');
+                    this.game.showNotification('Квест выполнен: ' + quest.name + '!', 'success');
                     updated = true;
                 }
             }
-        });
+        }
         
         if (updated) {
             this.saveProgress();
@@ -477,19 +452,24 @@ class LocationSystem {
     }
     
     claimQuestReward(questId) {
-        const quests = this.getCurrentQuests();
-        const quest = quests.find(q => q.id === questId);
+        var quests = this.getCurrentQuests();
+        var quest = null;
+        for (var i = 0; i < quests.length; i++) {
+            if (quests[i].id === questId) {
+                quest = quests[i];
+                break;
+            }
+        }
         
         if (!quest || !quest.completed || quest.claimed) {
             return false;
         }
         
-        // Выдаем награду
         this.game.shopSystem.addMoney(quest.reward);
         quest.claimed = true;
         
         this.saveProgress();
-        this.game.showNotification(`+${quest.reward} поке-баксов!`, 'success');
+        this.game.showNotification('+' + quest.reward + ' поке-баксов!', 'success');
         
         if (this.game.uiManager) {
             this.game.uiManager.updateQuestsUI();

@@ -1,11 +1,12 @@
-// ==============================
-// КОНФИГ С 50+ ПОКЕМОНАМИ
-// ==============================
+/**
+ * Основные настройки игры
+ * @module Config
+ */
 
-const CONFIG = {
+ const CONFIG = {
     // Настройки сохранений
     SAVE_KEY: 'pokemon_clicker_save',
-    AUTO_SAVE_INTERVAL: 30000, // 30 секунд
+    AUTO_SAVE_INTERVAL: 30000,
     
     // Базовые значения
     STARTING_MONEY: 100,
@@ -19,22 +20,24 @@ const CONFIG = {
     BASE_ENEMY_HP: 100,
     ENEMY_HP_MULTIPLIER: 1.5,
     REWARD_MULTIPLIER: 10,
-    
-    // Авто-атака
     AUTO_ATTACK_INTERVAL: 3000,
     
-    // Максимальный уровень врага относительно уровня игрока
-    MAX_ENEMY_LEVEL_MULTIPLIER: 2, // Враг может быть до 2-х уровней выше игрока
+    // Ограничения
+    MAX_ENEMY_LEVEL_MULTIPLIER: 2,
     MIN_ENEMY_LEVEL: 1,
+    MAX_TEAM_SIZE: 3,
+    MAX_ENERGY: 100,
+    ENERGY_DECAY_PER_ATTACK: 1,
+    ENERGY_RESTORE_PER_SECOND: 0.1,
     
-    // Ограничения редкости по уровню игрока
+    // Пороги редкости
     RARITY_LEVEL_REQUIREMENTS: {
-        COMMON: 0,      // Доступно с 1 уровня
-        UNCOMMON: 2,    // Доступно с 2 уровня
-        RARE: 5,        // Доступно с 5 уровня
-        EPIC: 10,       // Доступно с 10 уровня
-        SPECIAL: 15,    // Доступно с 15 уровня
-        LEGENDARY: 20   // Доступно с 20 уровня
+        COMMON: 0,
+        UNCOMMON: 2,
+        RARE: 5,
+        EPIC: 10,
+        SPECIAL: 15,
+        LEGENDARY: 20
     },
     
     // Типы покемонов
@@ -56,7 +59,7 @@ const CONFIG = {
         DRAGON: { strong: ['DRAGON'], weak: ['ICE', 'DRAGON'] }
     },
     
-    // Редкости покемонов
+    // Редкости
     RARITIES: {
         COMMON: { name: 'Обычный', color: '#6c757d', weight: 40, damageMultiplier: 1.0 },
         UNCOMMON: { name: 'Повсеместный', color: '#28a745', weight: 25, damageMultiplier: 1.2 },
@@ -66,35 +69,14 @@ const CONFIG = {
         LEGENDARY: { name: 'Легендарный', color: '#ffd700', weight: 3, damageMultiplier: 3.5 }
     },
     
-    // Шансы выпадения из покеболов (зависят от уровня игрока)
+    // Шансы покеболов
     POKEBALL_RATES: {
-        NORMAL: {
-            COMMON: 70,
-            UNCOMMON: 25,
-            RARE: 5,
-            EPIC: 0,
-            SPECIAL: 0,
-            LEGENDARY: 0
-        },
-        MASTER: {
-            COMMON: 30,
-            UNCOMMON: 35,
-            RARE: 25,
-            EPIC: 8,
-            SPECIAL: 2,
-            LEGENDARY: 0
-        },
-        MYTHIC: {
-            COMMON: 10,
-            UNCOMMON: 20,
-            RARE: 30,
-            EPIC: 25,
-            SPECIAL: 12,
-            LEGENDARY: 3
-        }
+        NORMAL: { COMMON: 70, UNCOMMON: 25, RARE: 5, EPIC: 0, SPECIAL: 0, LEGENDARY: 0 },
+        MASTER: { COMMON: 30, UNCOMMON: 35, RARE: 25, EPIC: 8, SPECIAL: 2, LEGENDARY: 0 },
+        MYTHIC: { COMMON: 10, UNCOMMON: 20, RARE: 30, EPIC: 25, SPECIAL: 12, LEGENDARY: 3 }
     },
     
-    // Цены в магазине
+    // Цены
     SHOP_PRICES: {
         NORMAL_BALL: 10,
         MASTER_BALL: 100,
@@ -103,17 +85,8 @@ const CONFIG = {
         TEAM_EXPANDER: 1000
     },
     
-    // Максимальный размер команды
-    MAX_TEAM_SIZE: 3,
-    
-    // Энергия покемонов
-    MAX_ENERGY: 100,
-    ENERGY_DECAY_PER_ATTACK: 1,
-    ENERGY_RESTORE_PER_SECOND: 0.1,
-    
-    // Данные покемонов (50+ штук)
+    // Данные покемонов (все 50+)
     POKEMON_DATA: {
-        // 1-10: Канто стартеры и обычные (COMMON)
         1: { name: 'Бульбазавр', rarity: 'COMMON', types: ['GRASS', 'POISON'], baseDamage: 5, imageKey: 'bulbasaur' },
         2: { name: 'Чармандер', rarity: 'COMMON', types: ['FIRE'], baseDamage: 6, imageKey: 'charmander' },
         3: { name: 'Сквиртл', rarity: 'COMMON', types: ['WATER'], baseDamage: 5, imageKey: 'squirtle' },
@@ -124,8 +97,6 @@ const CONFIG = {
         8: { name: 'Пикачу', rarity: 'COMMON', types: ['ELECTRIC'], baseDamage: 5, imageKey: 'pikachu' },
         9: { name: 'Сэндшрю', rarity: 'COMMON', types: ['GROUND'], baseDamage: 4, imageKey: 'sandshrew' },
         10: { name: 'Нидорин', rarity: 'COMMON', types: ['POISON'], baseDamage: 5, imageKey: 'nidoran' },
-        
-        // 11-20: UNCOMMON
         11: { name: 'Вулпикс', rarity: 'UNCOMMON', types: ['FIRE'], baseDamage: 8, imageKey: 'vulpix' },
         12: { name: 'Джигглипафф', rarity: 'UNCOMMON', types: ['NORMAL'], baseDamage: 7, imageKey: 'jigglypuff' },
         13: { name: 'Зубат', rarity: 'UNCOMMON', types: ['POISON', 'FLYING'], baseDamage: 7, imageKey: 'zubat' },
@@ -136,8 +107,6 @@ const CONFIG = {
         18: { name: 'Мяут', rarity: 'UNCOMMON', types: ['NORMAL'], baseDamage: 8, imageKey: 'meowth' },
         19: { name: 'Псидак', rarity: 'UNCOMMON', types: ['WATER'], baseDamage: 8, imageKey: 'psyduck' },
         20: { name: 'Манки', rarity: 'UNCOMMON', types: ['FIGHTING'], baseDamage: 9, imageKey: 'mankey' },
-        
-        // 21-30: RARE
         21: { name: 'Гроулит', rarity: 'RARE', types: ['FIRE'], baseDamage: 12, imageKey: 'growlithe' },
         22: { name: 'Поливаг', rarity: 'RARE', types: ['WATER'], baseDamage: 12, imageKey: 'poliwag' },
         23: { name: 'Абра', rarity: 'RARE', types: ['PSYCHIC'], baseDamage: 13, imageKey: 'abra' },
@@ -148,8 +117,6 @@ const CONFIG = {
         28: { name: 'Понита', rarity: 'RARE', types: ['FIRE'], baseDamage: 13, imageKey: 'ponyta' },
         29: { name: 'Слоупок', rarity: 'RARE', types: ['WATER', 'PSYCHIC'], baseDamage: 12, imageKey: 'slowpoke' },
         30: { name: 'Магнемит', rarity: 'RARE', types: ['ELECTRIC'], baseDamage: 13, imageKey: 'magnemite' },
-        
-        // 31-40: EPIC
         31: { name: 'Фарфетчд', rarity: 'EPIC', types: ['NORMAL', 'FLYING'], baseDamage: 18, imageKey: 'farfetchd' },
         32: { name: 'Додуо', rarity: 'EPIC', types: ['NORMAL', 'FLYING'], baseDamage: 18, imageKey: 'doduo' },
         33: { name: 'Сил', rarity: 'EPIC', types: ['WATER'], baseDamage: 19, imageKey: 'seel' },
@@ -160,15 +127,11 @@ const CONFIG = {
         38: { name: 'Дроузи', rarity: 'EPIC', types: ['PSYCHIC'], baseDamage: 19, imageKey: 'drowzee' },
         39: { name: 'Крабби', rarity: 'EPIC', types: ['WATER'], baseDamage: 20, imageKey: 'krabby' },
         40: { name: 'Вольторб', rarity: 'EPIC', types: ['ELECTRIC'], baseDamage: 19, imageKey: 'voltorb' },
-        
-        // 41-45: SPECIAL
         41: { name: 'Экзеггьют', rarity: 'SPECIAL', types: ['GRASS', 'PSYCHIC'], baseDamage: 28, imageKey: 'exeggcute' },
         42: { name: 'Кьюбон', rarity: 'SPECIAL', types: ['GROUND'], baseDamage: 30, imageKey: 'cubone' },
         43: { name: 'Ликитунг', rarity: 'SPECIAL', types: ['NORMAL'], baseDamage: 32, imageKey: 'lickitung' },
         44: { name: 'Кангасхан', rarity: 'SPECIAL', types: ['NORMAL'], baseDamage: 35, imageKey: 'kangaskhan' },
         45: { name: 'Хорси', rarity: 'SPECIAL', types: ['WATER'], baseDamage: 29, imageKey: 'horsea' },
-        
-        // 46-50: LEGENDARY
         46: { name: 'Артикуно', rarity: 'LEGENDARY', types: ['ICE', 'FLYING'], baseDamage: 70, imageKey: 'articuno' },
         47: { name: 'Запдос', rarity: 'LEGENDARY', types: ['ELECTRIC', 'FLYING'], baseDamage: 75, imageKey: 'zapdos' },
         48: { name: 'Молтрес', rarity: 'LEGENDARY', types: ['FIRE', 'FLYING'], baseDamage: 72, imageKey: 'moltres' },
@@ -176,9 +139,8 @@ const CONFIG = {
         50: { name: 'Мью', rarity: 'LEGENDARY', types: ['PSYCHIC'], baseDamage: 80, imageKey: 'mew' }
     },
     
-    // Данные противников (локации и возможные покемоны)
+    // Данные противников по локациям
     ENEMY_DATA: {
-        // Паллет Таун и начальные маршруты (только COMMON)
         'pallet_town': [
             { name: 'Раттата', rarity: 'COMMON', types: ['NORMAL'], imageKey: 'rattata' },
             { name: 'Пиджи', rarity: 'COMMON', types: ['NORMAL', 'FLYING'], imageKey: 'pidgey' }
@@ -280,28 +242,11 @@ const CONFIG = {
     
     // Данные покеболов
     POKEBALL_DATA: {
-        NORMAL: {
-            name: 'Покебол',
-            description: 'Обычный покебол. Шанс получить обычного или необычного покемона.',
-            price: 10,
-            color: '#ff4444',
-            imageKey: 'NORMAL'
-        },
-        MASTER: {
-            name: 'Мастербол',
-            description: 'Редкий покебол. Высокий шанс получить редких и эпических покемонов.',
-            price: 100,
-            color: '#9c27b0',
-            imageKey: 'MASTER'
-        },
-        MYTHIC: {
-            name: 'Ультрабол',
-            description: 'Легендарный покебол. Максимальный шанс получить легендарных покемонов.',
-            price: 500,
-            color: '#ffd700',
-            imageKey: 'MYTHIC'
-        }
+        NORMAL: { name: 'Покебол', description: 'Обычный покебол', price: 10, color: '#ff4444', imageKey: 'NORMAL' },
+        MASTER: { name: 'Мастербол', description: 'Редкий покебол', price: 100, color: '#9c27b0', imageKey: 'MASTER' },
+        MYTHIC: { name: 'Ультрабол', description: 'Легендарный покебол', price: 500, color: '#ffd700', imageKey: 'MYTHIC' }
     }
 };
 
-window.GAME_CONFIG = CONFIG;
+// Делаем глобально доступным
+window.CONFIG = CONFIG;
