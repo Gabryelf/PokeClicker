@@ -514,6 +514,104 @@
     background: #666;
 }
 
+/* ===== Стили для героев ===== */
+
+.hero-stats-header {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--border-radius-sm);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hero-stat {
+    text-align: center;
+}
+
+.hero-stat .stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.hero-stat .stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.hero-card.locked {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+}
+
+.hero-card.locked .select-hero-btn {
+    background: #444;
+    color: #888;
+    cursor: not-allowed;
+    border-color: #444;
+}
+
+.select-hero-btn.locked:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Улучшения */
+.upgrade-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.upgrade-skill-points {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.upgrade-level-info {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.upgrade-tier.locked {
+    opacity: 0.4;
+}
+
+.upgrade-item.locked {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.upgrade-item.locked:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.upgrade-item.available {
+    cursor: pointer;
+    border-color: rgba(108, 92, 231, 0.3);
+}
+
+.upgrade-item.available:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
+}
+
 /* Адаптивность */
 @media (max-width: 1024px) {
     .modal-header h2 {

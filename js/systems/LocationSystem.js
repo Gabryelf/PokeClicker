@@ -352,10 +352,27 @@
         
         this.saveProgress();
         this.updateDailyQuests();
+        
+        // Проверяем открытие героев
+        this.checkHeroUnlock();
+        
         this.game.showNotification('Вы прибыли в ' + this.locations[this.currentLocation].name + '!', 'success');
         
         if (this.game.uiManager) {
             this.game.uiManager.updateLocationUI();
+        }
+    }
+
+    // метод для открытия новых героев 
+    checkHeroUnlock() {
+        if (this.game && this.game.heroSystem) {
+            var unlocked = this.game.heroSystem.checkUnlockConditions(this.currentLocation);
+            if (unlocked) {
+                // Обновляем UI героев если модальное окно открыто
+                if (this.game.uiManager) {
+                    this.game.uiManager.updateHeroSelectionUI();
+                }
+            }
         }
     }
     
