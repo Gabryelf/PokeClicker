@@ -30,11 +30,9 @@
             if (modal) {
                 this.modals[name] = modal;
                 
-                // Находим все кнопки закрытия
                 var closeBtns = modal.querySelectorAll('.close');
                 for (var j = 0; j < closeBtns.length; j++) {
                     var btn = closeBtns[j];
-                    // Используем замыкание с правильной ссылкой
                     (function(currentModal) {
                         btn.addEventListener('click', function(e) {
                             e.stopPropagation();
@@ -43,7 +41,6 @@
                     })(modal);
                 }
                 
-                // Закрытие по клику вне модального окна
                 (function(currentModal) {
                     currentModal.addEventListener('click', function(e) {
                         if (e.target === currentModal) {
@@ -95,6 +92,17 @@
                 if (self.game.mapModal) {
                     self.game.mapModal.show();
                 }
+            });
+        }
+        
+        // Кнопка героев
+        var heroBtn = document.getElementById('hero-menu');
+        if (heroBtn) {
+            var self = this;
+            heroBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                self.showHeroModal();
             });
         }
         
@@ -349,6 +357,258 @@
             teamSlots.appendChild(emptySlot);
         }
     }
+    
+    // ============ МЕТОДЫ ДЛЯ ГЕРОЕВ ============
+    
+    showHeroModal() {
+        var modal = document.getElementById('hero-modal');
+        if (!modal) return;
+        
+        // Обновляем UI героев перед показом
+        this.createHeroSelectionUI();
+        modal.style.display = 'flex';
+    }
+    
+    createHeroSelectionUI() {
+        var container = document.getElementById('hero-selection');
+        if (!container) return;
+        
+        var heroSystem = this.game.heroSystem;
+        if (!heroSystem) return;
+        
+        var allHeroes = heroSystem.getAllHeroes();
+        var unlockedHeroes = heroSystem.getUnlockedHeroes();
+        var lockedHeroes = heroSystem.getLockedHeroes();
+        var currentHero = heroSystem.currentHero;
+        var stats = heroSystem.getHeroStats();
+        
+        var html = '<div class="hero-stats-header">';
+        if (stats) {
+            html += '<div class="hero-stats">' +
+                '<div class="hero-stat"><span class="stat-label">Уровень</span><span class="stat-value">' + stats.level + '</span></div>' +
+                '<div class="hero-stat"><span class="stat-label">Опыт</span><span class="stat-value">' + Math.floor(stats.exp) + '/' + stats.expNeeded + '</span></div>' +
+                '<div class="hero-stat"><span class="stat-label">Очки навыков</span><span class="stat-value" style="color: var(--accent-warning);">' + stats.skillPoints + '</span></div>' +
+                '<div class="hero-stat"><span class="stat-label">Бонус</span><span class="stat-value" style="color: var(--accent-success);">+' + stats.bonus + '%</span></div>' +
+                '</div>';
+        }
+        html += '</div>';
+        
+        html += '<div class="hero-selection-grid">';
+        
+        // Отображаем доступных героев
+        for (var id in unlockedHeroes) {
+            if (unlockedHeroes.hasOwnProperty(id)) {
+                var hero = unlockedHeroes[id];
+                var isSelected = (id === currentHero);
+                html += this.createHeroCardHTML(hero, isSelected, false);
+            }
+        }
+        
+        // Отображаем заблокированных героев
+        for (var id in lockedHeroes) {
+            if (lockedHeroes.hasOwnProperty(id)) {
+                var hero = lockedHeroes[id];
+                html += this.createHeroCardHTML(hero, false, true);
+            }
+        }
+        
+        html += '</div>';
+        
+        // Кнопка открытия дерева улучшений
+        html += '<div class="hero-upgrades-section">' +
+            '<button class="show-upgrades-btn" id="show-upgrades-btn">' +
+            '<i class="fas fa-chart-line"></i> Дерево улучшений' +
+            '</button>' +
+            '</div>';
+        
+        container.innerHTML = html;
+        
+        // Обработчики для кнопок выбора героя
+        var selectBtns = container.querySelectorAll('.select-hero-btn:not(.locked)');
+        selectBtns.forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var heroId = btn.dataset.heroId;
+                if (heroSystem.changeHero(heroId)) {
+                    // Обновляем UI
+                    self.createHeroSelectionUI();
+                    self.updateUI();
+                }
+            });
+        });
+        
+        // Обработчик для кнопки открытия дерева улучшений
+        var upgradesBtn = document.getElementById('show-upgrades-btn');
+        if (upgradesBtn) {
+            upgradesBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                self.showHeroUpgrades();
+            });
+        }
+        
+        var self = this;
+    }
+    
+    createHeroCardHTML(hero, isSelected, isLocked) {
+        var lockedClass = isLocked ? 'locked' : '';
+        var selectedClass = isSelected ? 'selected' : '';
+        var statusText = isLocked ? '🔒 ' + (hero.unlockText || 'Закрыт') : (isSelected ? '✅ Выбран' : 'Выбрать');
+        var disabledAttr = isLocked ? 'disabled' : '';
+        
+        return '<div class="hero-card ' + lockedClass + ' ' + selectedClass + '" data-hero-id="' + hero.id + '">' +
+            '<div class="hero-avatar" style="border-color: ' + hero.color + '">' +
+            '<img src="' + hero.image + '" alt="' + hero.name + '" onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png\'">' +
+            '</div>' +
+            '<h3>' + hero.name + '</h3>' +
+            '<p class="hero-description">' + hero.description + '</p>' +
+            '<div class="hero-bonus-info">' +
+            '<span class="hero-bonus-value">' + hero.bonus + '</span>' +
+            '</div>' +
+            '<div class="hero-favorite-pokemon">' +
+            hero.favoritePokemon.map(function(id) {
+                return '<div class="fav-pokemon-icon" title="Любимый покемон">' +
+                    '<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + id + '.png" alt="Pokemon" width="30" height="30" onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png\'">' +
+                    '</div>';
+            }).join('') +
+            '</div>' +
+            '<button class="select-hero-btn ' + lockedClass + '" data-hero-id="' + hero.id + '" ' + disabledAttr + '>' + statusText + '</button>' +
+            '</div>';
+    }
+    
+    showHeroUpgrades() {
+        var modal = document.getElementById('hero-upgrade-modal');
+        if (!modal) return;
+        
+        var heroSystem = this.game.heroSystem;
+        if (!heroSystem) return;
+        
+        var hero = heroSystem.getHero();
+        if (!hero) return;
+        
+        // Обновляем имя героя в заголовке
+        var nameEl = document.getElementById('hero-upgrade-name');
+        if (nameEl) {
+            nameEl.textContent = 'для ' + hero.name;
+        }
+        
+        this.createUpgradeTree();
+        modal.style.display = 'flex';
+    }
+    
+    createUpgradeTree() {
+        var container = document.getElementById('hero-upgrade-tree');
+        if (!container) return;
+        
+        var heroSystem = this.game.heroSystem;
+        if (!heroSystem) return;
+        
+        var hero = heroSystem.getHero();
+        if (!hero) return;
+        
+        var availableUpgrades = heroSystem.getAvailableUpgrades();
+        var purchased = heroSystem.getPurchasedUpgrades();
+        var stats = heroSystem.getHeroStats();
+        
+        var html = '';
+        
+        // Информация об очках навыков
+        html += '<div class="upgrade-info-header">' +
+            '<div class="upgrade-skill-points">' +
+            '<i class="fas fa-star" style="color: var(--accent-warning);"></i>' +
+            ' Очки навыков: <span style="color: var(--accent-warning); font-weight: bold;">' + (stats ? stats.skillPoints : 0) + '</span>' +
+            '</div>' +
+            '<div class="upgrade-level-info">Уровень: ' + (stats ? stats.level : 1) + '</div>' +
+            '</div>';
+        
+        html += '<div class="upgrade-tree">';
+        
+        for (var tier = 1; tier <= heroSystem.heroLevel; tier++) {
+            var tierUpgrades = hero.upgrades[tier] || [];
+            if (tierUpgrades.length === 0) continue;
+            
+            var isTierAvailable = tier <= heroSystem.heroLevel;
+            var tierClass = isTierAvailable ? 'available' : 'locked';
+            
+            html += '<div class="upgrade-tier ' + tierClass + '">' +
+                '<h4><i class="fas fa-star"></i> Уровень ' + tier + 
+                (tier > heroSystem.heroLevel ? ' 🔒' : '') +
+                '</h4>' +
+                '<div class="upgrade-grid">';
+            
+            for (var i = 0; i < tierUpgrades.length; i++) {
+                var upgrade = tierUpgrades[i];
+                var isPurchased = purchased.indexOf(upgrade.id) !== -1;
+                var isAvailable = false;
+                
+                // Проверяем доступность
+                if (isTierAvailable && !isPurchased) {
+                    var requirementsMet = true;
+                    if (upgrade.requires) {
+                        for (var j = 0; j < upgrade.requires.length; j++) {
+                            if (purchased.indexOf(upgrade.requires[j]) === -1) {
+                                requirementsMet = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (requirementsMet && stats && stats.skillPoints > 0) {
+                        isAvailable = true;
+                    }
+                }
+                
+                var statusClass = '';
+                if (isPurchased) statusClass = 'purchased';
+                else if (isAvailable) statusClass = 'available';
+                else statusClass = 'locked';
+                
+                html += '<div class="upgrade-item ' + statusClass + '" data-upgrade-id="' + upgrade.id + '">' +
+                    '<div class="upgrade-icon">' + (upgrade.icon || '⭐') + '</div>' +
+                    '<div class="upgrade-name">' + upgrade.name + '</div>' +
+                    '<div class="upgrade-desc">' + upgrade.desc + '</div>';
+                
+                if (!isPurchased) {
+                    html += '<div class="upgrade-cost">' +
+                        '<i class="fas fa-coins"></i> ' + upgrade.cost +
+                        ' <i class="fas fa-star" style="color: var(--accent-warning); margin-left: 5px;"></i> 1 очко' +
+                        '</div>';
+                } else {
+                    html += '<div class="purchased-badge">✅ Куплено</div>';
+                }
+                
+                if (upgrade.requires) {
+                    var reqNames = upgrade.requires.map(function(reqId) {
+                        var reqUpgrade = heroSystem.findUpgrade(reqId);
+                        return reqUpgrade ? reqUpgrade.name : reqId;
+                    });
+                    html += '<div class="upgrade-prerequisites">Требуется: ' + reqNames.join(', ') + '</div>';
+                }
+                
+                html += '</div>';
+            }
+            
+            html += '</div></div>';
+        }
+        
+        html += '</div>';
+        container.innerHTML = html;
+        
+        // Обработчики для доступных улучшений
+        var self = this;
+        var items = container.querySelectorAll('.upgrade-item.available');
+        items.forEach(function(item) {
+            item.addEventListener('click', function() {
+                var upgradeId = item.dataset.upgradeId;
+                var success = heroSystem.purchaseUpgrade(upgradeId);
+                if (success) {
+                    // Обновляем дерево
+                    self.createUpgradeTree();
+                    self.updateUI();
+                }
+            });
+        });
+    }
+    
+    // ============ ОСТАЛЬНЫЕ МЕТОДЫ ============
     
     async createCollectionUI() {
         var collectionGrid = document.getElementById('collection-grid');
@@ -613,53 +873,6 @@
         avatarName.textContent = hero.name;
         avatarLevel.textContent = heroSystem.heroLevel;
         avatarImage.src = hero.image;
-    }
-    
-    showHeroModal() {
-        var modal = document.getElementById('hero-modal');
-        if (!modal) return;
-        this.createHeroSelectionUI();
-        modal.style.display = 'flex';
-    }
-    
-    createHeroSelectionUI() {
-        var container = document.getElementById('hero-selection');
-        if (!container) return;
-        var heroSystem = this.game.heroSystem;
-        if (!heroSystem) return;
-        var heroes = heroSystem.heroes;
-        var currentHero = heroSystem.currentHero;
-        
-        var html = '<div class="hero-selection-grid">';
-        for (var id in heroes) {
-            if (heroes.hasOwnProperty(id)) {
-                var hero = heroes[id];
-                html += '<div class="hero-card' + (currentHero === id ? ' selected' : '') + '" data-hero-id="' + id + '">' +
-                    '<div class="hero-avatar" style="border-color: ' + hero.color + '"><img src="' + hero.image + '" alt="' + hero.name + '" onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png\'"></div>' +
-                    '<h3>' + hero.name + '</h3><p class="hero-description">' + hero.description + '</p>' +
-                    '<div class="hero-bonus-info"><span class="hero-bonus-value">+' + hero.bonusValue + '% за уровень</span><p>' + hero.bonus + '</p></div>' +
-                    '<div class="hero-favorite-pokemon">';
-                for (var i = 0; i < hero.favoritePokemon.length; i++) {
-                    html += '<div class="fav-pokemon-icon" title="Любимый покемон"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + hero.favoritePokemon[i] + '.png" alt="Pokemon" width="30" height="30" onerror="this.src=\'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png\'"></div>';
-                }
-                html += '</div><button class="select-hero-btn" data-hero-id="' + id + '">' + (currentHero === id ? 'Выбран' : 'Выбрать') + '</button></div>';
-            }
-        }
-        html += '</div>';
-        container.innerHTML = html;
-        
-        var self = this;
-        container.querySelectorAll('.select-hero-btn').forEach(function(btn) {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                var heroId = btn.dataset.heroId;
-                if (heroSystem.changeHero(heroId)) {
-                    self.createHeroSelectionUI();
-                    self.updateAvatar();
-                    self.updateUI();
-                }
-            });
-        });
     }
     
     createMergeModal() {
