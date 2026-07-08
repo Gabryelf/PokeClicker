@@ -119,7 +119,30 @@
         NORMAL: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/pakeballs/normalball.png',
         MASTER: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/pakeballs/masterball.png',
         MYTHIC: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/pakeballs/ultraball.png'
+    },
+
+    // ⭐ ИКОНКИ ТИПОВ
+    TYPE_ICONS: {
+        BUG: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/bug.svg',
+        DARK: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/dark.svg',
+        DRAGON: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/dragon.svg',
+        ELECTRIC: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/electric.svg',
+        FAIRY: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/fairy.svg',
+        FIGHTING: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/fighting.svg',
+        FIRE: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/fire.svg',
+        FLYING: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/flying.svg',
+        GHOST: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/ghost.svg',
+        GRASS: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/grass.svg',
+        GROUND: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/ground.svg',
+        ICE: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/ice.svg',
+        NORMAL: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/normal.svg',
+        POISON: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/poison.svg',
+        PSYCHIC: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/psychic.svg',
+        ROCK: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/rock.svg',
+        STEEL: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/steel.svg',
+        WATER: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/water.svg'
     }
+
 };
 
 window.IMAGE_CONFIG = IMAGE_CONFIG;

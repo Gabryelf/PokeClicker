@@ -131,7 +131,9 @@
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* Коллекция */
+/* ============================================
+   КОЛЛЕКЦИЯ
+   ============================================ */
 .collection-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -225,7 +227,9 @@
     font-size: 1.1rem;
 }
 
-/* Магазин */
+/* ============================================
+   МАГАЗИН
+   ============================================ */
 .shop-items {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -306,7 +310,9 @@
     box-shadow: var(--glow-success);
 }
 
-/* Управление командой */
+/* ============================================
+   УПРАВЛЕНИЕ КОМАНДОЙ
+   ============================================ */
 .current-team, .available-pokemon {
     margin-bottom: 32px;
 }
@@ -392,7 +398,6 @@
     grid-column: 1 / -1;
 }
 
-/* Урон команды */
 .team-damage {
     margin-top: 20px;
     padding: 16px 24px;
@@ -422,7 +427,9 @@
     font-size: 1.3rem;
 }
 
-/* Карта */
+/* ============================================
+   КАРТА
+   ============================================ */
 .map-modal .modal-content {
     max-width: 900px;
     width: 95%;
@@ -514,8 +521,245 @@
     background: #666;
 }
 
-/* ===== Стили для героев ===== */
+/* ============================================
+   ГЕРОИ - ПОЛНАЯ ВЕРСИЯ
+   ============================================ */
+.hero-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 10px 0;
+}
 
+/* Базовая карточка героя */
+.hero-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    transition: all 0.4s ease;
+    position: relative;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    cursor: default;
+}
+
+/* Фоновое изображение героя */
+.hero-card .hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.12;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Затемнение для заблокированных героев */
+.hero-card.locked .hero-bg {
+    opacity: 0.25;
+    filter: grayscale(0.8) brightness(0.5);
+}
+
+.hero-card.locked .hero-content .hero-avatar,
+.hero-card.locked .hero-content .hero-description,
+.hero-card.locked .hero-content .hero-bonus-info,
+.hero-card.locked .hero-content .hero-favorite-pokemon,
+.hero-card.locked .hero-content .select-hero-btn {
+    display: none;
+}
+
+.hero-card.locked .hero-content h3 {
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+.hero-card.locked .hero-content .hero-unlock-hint {
+    display: block;
+    margin-top: 8px;
+    padding: 6px 16px;
+    background: rgba(255, 215, 0, 0.12);
+    border: 1px solid var(--accent-warning);
+    border-radius: 100px;
+    color: var(--accent-warning);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* При наведении на заблокированного героя показываем полную информацию */
+.hero-card.locked:hover .hero-content .hero-avatar,
+.hero-card.locked:hover .hero-content .hero-description,
+.hero-card.locked:hover .hero-content .hero-bonus-info,
+.hero-card.locked:hover .hero-content .hero-favorite-pokemon,
+.hero-card.locked:hover .hero-content .select-hero-btn {
+    display: flex;
+}
+
+.hero-card.locked:hover .hero-content h3 {
+    font-size: 1.3rem;
+    margin-top: 0;
+}
+
+.hero-card.locked:hover .hero-content .hero-unlock-hint {
+    display: none;
+}
+
+.hero-card.locked:hover .hero-bg {
+    opacity: 0.2;
+    filter: grayscale(0.5) brightness(0.7);
+}
+
+/* Контент карточки */
+.hero-card .hero-content {
+    position: relative;
+    z-index: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    transition: all 0.4s ease;
+}
+
+/* Аватар героя */
+.hero-card .hero-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    margin-bottom: 10px;
+}
+
+.hero-card .hero-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-card h3 {
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.hero-card .hero-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.hero-card .hero-bonus-info {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+.hero-card .hero-bonus-value {
+    color: var(--accent-warning);
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.hero-card .hero-favorite-pokemon {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.hero-card .fav-pokemon-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hero-card .fav-pokemon-icon img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.hero-card .hero-unlock-hint {
+    display: none;
+}
+
+/* Кнопка выбора героя */
+.hero-card .select-hero-btn {
+    padding: 8px 24px;
+    border-radius: 100px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid var(--accent-primary);
+    background: transparent;
+    color: var(--accent-primary);
+    font-size: 0.9rem;
+    margin-top: auto;
+}
+
+.hero-card .select-hero-btn:hover:not(:disabled) {
+    background: var(--accent-primary);
+    color: white;
+    transform: scale(1.05);
+}
+
+.hero-card .select-hero-btn:disabled {
+    border-color: #555;
+    color: #555;
+    cursor: not-allowed;
+}
+
+.hero-card .select-hero-btn:disabled:hover {
+    transform: none;
+}
+
+/* Выбранный герой */
+.hero-card.selected {
+    border-color: var(--accent-success);
+    background: rgba(0, 184, 148, 0.08);
+}
+
+.hero-card.selected .select-hero-btn {
+    background: var(--accent-success);
+    color: white;
+    border-color: var(--accent-success);
+}
+
+/* Карточка героя при наведении */
+.hero-card:not(.locked):hover {
+    transform: translateY(-6px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 10px 40px rgba(108, 92, 231, 0.25);
+}
+
+.hero-card:not(.locked):hover .hero-bg {
+    opacity: 0.2;
+}
+
+/* ============================================
+   СТАТИСТИКА ГЕРОЯ
+   ============================================ */
 .hero-stats-header {
     background: rgba(255, 255, 255, 0.02);
     border-radius: var(--border-radius-sm);
@@ -548,24 +792,170 @@
     color: var(--text-primary);
 }
 
-.hero-card.locked {
-    opacity: 0.6;
-    filter: grayscale(0.5);
+/* ============================================
+   КНОПКА ОТКРЫТИЯ УЛУЧШЕНИЙ
+   ============================================ */
+.hero-upgrades-section {
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.hero-card.locked .select-hero-btn {
-    background: #444;
-    color: #888;
-    cursor: not-allowed;
-    border-color: #444;
+.show-upgrades-btn {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, var(--accent-warning), #f39c12);
+    border: none;
+    border-radius: 100px;
+    color: var(--bg-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
 }
 
-.select-hero-btn.locked:hover {
+.show-upgrades-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(253, 203, 110, 0.4);
+}
+
+/* ============================================
+   ДЕРЕВО УЛУЧШЕНИЙ
+   ============================================ */
+.upgrade-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    padding: 10px 0;
+}
+
+.upgrade-tier {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--border-radius-sm);
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.upgrade-tier.locked {
+    opacity: 0.4;
+}
+
+.upgrade-tier h4 {
+    color: var(--accent-warning);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.upgrade-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.upgrade-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+    position: relative;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.upgrade-item .upgrade-icon {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+}
+
+.upgrade-item .upgrade-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+}
+
+.upgrade-item .upgrade-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    flex: 1;
+}
+
+.upgrade-item .upgrade-cost {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: var(--accent-warning);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.upgrade-item .upgrade-cost i {
+    color: var(--accent-warning);
+}
+
+.upgrade-item .purchased-badge {
+    color: var(--accent-success);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.upgrade-item .upgrade-prerequisites {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+/* Доступное улучшение */
+.upgrade-item.available {
+    opacity: 1;
+    cursor: pointer;
+    border-color: rgba(108, 92, 231, 0.3);
+}
+
+.upgrade-item.available:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 10px 30px rgba(108, 92, 231, 0.25);
+}
+
+/* Купленное улучшение */
+.upgrade-item.purchased {
+    opacity: 0.85;
+    border-color: var(--accent-success);
+    background: rgba(0, 184, 148, 0.08);
+    cursor: default;
+}
+
+.upgrade-item.purchased:hover {
     transform: none;
     box-shadow: none;
 }
 
-/* Улучшения */
+/* Заблокированное улучшение */
+.upgrade-item.locked {
+    cursor: not-allowed;
+    opacity: 0.3;
+}
+
+.upgrade-item.locked:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* ============================================
+   ИНФОРМАЦИЯ ОБ УЛУЧШЕНИЯХ
+   ============================================ */
 .upgrade-info-header {
     display: flex;
     justify-content: space-between;
@@ -575,6 +965,8 @@
     border-radius: var(--border-radius-sm);
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .upgrade-skill-points {
@@ -582,37 +974,56 @@
     color: var(--text-secondary);
 }
 
+.upgrade-skill-points i {
+    color: var(--accent-warning);
+}
+
 .upgrade-level-info {
     font-size: 1.1rem;
     color: var(--text-secondary);
 }
 
-.upgrade-tier.locked {
-    opacity: 0.4;
+/* ============================================
+   ФОНОВЫЕ ИЗОБРАЖЕНИЯ ДЛЯ МОДАЛЬНЫХ ОКОН
+   ============================================ */
+.hero-modal-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: opacity 0.5s ease;
 }
 
-.upgrade-item.locked {
-    cursor: not-allowed;
-    opacity: 0.4;
+.hero-modal-bg.ash {
+    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png');
 }
 
-.upgrade-item.locked:hover {
-    transform: none;
-    box-shadow: none;
+.hero-modal-bg.misty {
+    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/54.png');
 }
 
-.upgrade-item.available {
-    cursor: pointer;
-    border-color: rgba(108, 92, 231, 0.3);
+.hero-modal-bg.brock {
+    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/95.png');
 }
 
-.upgrade-item.available:hover {
-    transform: translateY(-4px);
-    border-color: var(--accent-primary);
-    box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
+.hero-modal-bg.gary {
+    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png');
 }
 
-/* Адаптивность */
+.hero-modal-bg.cynthia {
+    background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/149.png');
+}
+
+/* ============================================
+   АДАПТИВНОСТЬ
+   ============================================ */
 @media (max-width: 1024px) {
     .modal-header h2 {
         font-size: 1.3rem;
@@ -623,32 +1034,57 @@
     .modal-body {
         padding: 20px;
     }
+    
     .collection-grid {
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     }
+    
     .pokemon-card img {
         width: 80px;
         height: 80px;
     }
+    
     .shop-items {
         grid-template-columns: 1fr;
     }
+    
     .team-slots.selection-slots {
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
+    
     .available-grid {
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 8px;
     }
+    
     .map-legend {
         flex-wrap: wrap;
         gap: 15px;
     }
+    
     .location-info {
         flex-direction: column;
         gap: 10px;
         margin-left: 0;
+    }
+    
+    .hero-selection-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .hero-card {
+        min-height: 220px;
+    }
+    
+    .hero-card .hero-avatar {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .upgrade-grid {
+        grid-template-columns: 1fr 1fr;
     }
 }
 
@@ -657,38 +1093,84 @@
         width: 95%;
         max-height: 90vh;
     }
+    
     .modal-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    .modal-header h2 i {
         font-size: 1.2rem;
     }
+    
     .modal-body {
         padding: 16px;
     }
+    
     .collection-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
         gap: 10px;
     }
+    
     .pokemon-card {
         padding: 12px;
     }
+    
     .pokemon-card img {
         width: 70px;
         height: 70px;
     }
+    
     .shop-items {
         grid-template-columns: 1fr;
     }
+    
     .team-slots.selection-slots {
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
+    
     .available-grid {
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 8px;
     }
+    
     #map-canvas {
         height: 400px;
     }
+    
     .travel-timer {
         font-size: 0.8rem;
+    }
+    
+    .hero-selection-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .hero-card {
+        min-height: 180px;
+    }
+    
+    .hero-card .hero-avatar {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .hero-card h3 {
+        font-size: 1rem;
+    }
+    
+    .hero-card .hero-description {
+        font-size: 0.75rem;
+    }
+    
+    .upgrade-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 400px) {
+    .hero-selection-grid {
+        grid-template-columns: 1fr;
     }
 }

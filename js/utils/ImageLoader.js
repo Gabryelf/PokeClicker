@@ -20,8 +20,6 @@
 
         const promise = new Promise((resolve, reject) => {
             const img = new Image();
-            // Убираем crossOrigin - он мешает загрузке с GitHub
-            // img.crossOrigin = 'anonymous';
             
             img.onload = () => {
                 this.cache.set(id, img);
@@ -128,25 +126,41 @@ class ImageManager {
         return this.cache.loadImage(url, 'pokeball_' + pokeballType);
     }
 
+    // ⭐ НОВЫЙ МЕТОД - загрузка иконок типов
+    getTypeIcon(type) {
+        const normalizedType = type.toUpperCase();
+        const url = this.config.TYPE_ICONS[normalizedType];
+        if (!url) {
+            return Promise.resolve(this.cache.createFallbackImage('type_' + normalizedType));
+        }
+        return this.cache.loadImage(url, 'type_' + normalizedType);
+    }
+
     async preloadAll() {
         const promises = [];
         
-        // Загружаем покеболы в первую очередь
+        // Загружаем покеболы
         for (const [type] of Object.entries(this.config.POKEBALL_IMAGES)) {
             promises.push(this.getPokeballImage(type).catch(() => {}));
         }
         
+        // Загружаем иконки типов
+        for (const [type] of Object.entries(this.config.TYPE_ICONS)) {
+            promises.push(this.getTypeIcon(type).catch(() => {}));
+        }
+        
+        // Загружаем покемонов
         for (const [id] of Object.entries(this.config.POKEMON_IMAGES)) {
             promises.push(this.getPokemonImage(parseInt(id)).catch(() => {}));
         }
         
+        // Загружаем врагов
         for (const [key] of Object.entries(this.config.ENEMY_IMAGES)) {
             promises.push(this.getEnemyImage(key).catch(() => {}));
         }
         
         await Promise.all(promises);
         this.isReady = true;
-        console.log('✅ Все изображения загружены!');
     }
 
     getCachedPokemonImage(pokemonId) {
@@ -156,12 +170,15 @@ class ImageManager {
     getCachedPokeballImage(type) {
         return this.cache.getCached('pokeball_' + type);
     }
+
+    getCachedTypeIcon(type) {
+        return this.cache.getCached('type_' + type.toUpperCase());
+    }
 }
 
 // Функция для обновления изображений покеболов в хедере
 async function updatePokeballImages(imageManager) {
-    console.log('🔄 Обновление изображений покеболов...');
-    
+
     const pokeballItems = document.querySelectorAll('.pokeball-item');
     
     for (const item of pokeballItems) {
@@ -180,7 +197,6 @@ async function updatePokeballImages(imageManager) {
                 img.style.height = '32px';
                 img.style.objectFit = 'contain';
                 img.style.display = 'block';
-                console.log(`✅ Загружено изображение для ${type}:`, img.src);
             }
         } catch (e) {
             console.error(`❌ Ошибка обновления покебола ${type}:`, e);

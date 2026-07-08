@@ -326,7 +326,7 @@
             if (step && step.action === 'attack-enemy') {
                 console.log('⚔️ Атака разрешена для туториала');
             } else {
-                this.showNotification('🎓 Следуй указаниям туториала!', 'warning');
+                this.showNotification('Следуй указаниям туториала!', 'warning');
                 return;
             }
         }

@@ -149,7 +149,7 @@
         return result;
     }
     
-    updateUI() {
+    async updateUI() {
         if (!this.currentEnemy) return;
         
         var nameEl = document.getElementById('enemy-name');
@@ -180,13 +180,32 @@
             }
         }
         
-        if (typeIcons) {
-            var typesHtml = '';
-            for (var i = 0; i < this.currentEnemy.types.length; i++) {
-                var type = this.currentEnemy.types[i];
-                typesHtml += '<div class="type-icon" title="' + type + '">' + this.getTypeSymbol(type) + '</div>';
+        // Обновление иконок типов врага
+        if (typeIcons && this.currentEnemy.types) {
+            typeIcons.innerHTML = '';
+            for (const type of this.currentEnemy.types) {
+                try {
+                    const icon = await TypeIconHelper.createLoadedTypeIcon(
+                        type,
+                        this.game.imageManager,
+                        'lg'
+                    );
+                    typeIcons.appendChild(icon);
+                } catch (e) {
+                    // Запасной вариант
+                    const span = document.createElement('span');
+                    span.className = 'type-badge-fallback';
+                    span.textContent = type;
+                    span.style.cssText = `
+                        padding: 4px 12px;
+                        border-radius: 100px;
+                        background: rgba(255,255,255,0.1);
+                        color: var(--text-secondary);
+                        font-size: 0.8rem;
+                    `;
+                    typeIcons.appendChild(span);
+                }
             }
-            typeIcons.innerHTML = typesHtml;
         }
         
         if (hpBar) {
@@ -205,16 +224,14 @@
                 // Игнорируем ошибки
             });
         }
+
+        
     }
     
-    getTypeSymbol(type) {
-        var symbols = {
-            NORMAL: '⬤', FIRE: '🔥', WATER: '💧', GRASS: '🌿',
-            ELECTRIC: '⚡', ICE: '❄️', FIGHTING: '👊', POISON: '☠️',
-            GROUND: '⛰️', FLYING: '🦅', PSYCHIC: '🔮', BUG: '🐛',
-            ROCK: '🪨', GHOST: '👻', DRAGON: '🐉'
-        };
-        return symbols[type] || '❓';
+    async getTypeIconHTML(type, size = 'md') {
+        const container = TypeIconHelper.createTypeIconElement(type, size);
+        await TypeIconHelper.loadTypeIcon(container, type, this.game.imageManager);
+        return container.outerHTML;
     }
     
     getRarityIcon(rarity) {

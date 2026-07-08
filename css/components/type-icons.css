@@ -1,0 +1,337 @@
+/**
+ * Стили для иконок типов покемонов
+ * @module type-icons.css
+ */
+
+/* Контейнер для иконок типов */
+.type-icons-container {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Базовая иконка типа */
+.type-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 100% !important;
+    flex-shrink: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 200ms ease !important;
+}
+
+/* Изображение внутри иконки */
+.type-icon img {
+    display: block !important;
+    width: 55% !important;
+    height: 55% !important;
+    max-width: 55% !important;
+    max-height: 55% !important;
+    object-fit: contain !important;
+    filter: brightness(0) invert(1) !important;
+    transition: all 200ms ease !important;
+    margin: auto !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+}
+
+/* Эффект при наведении */
+.type-icon:hover {
+    filter: saturate(200%) !important;
+    transform: scale(1.15) !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
+}
+
+/* ============================================
+   РАЗМЕРЫ ИКОНОК
+   ============================================ */
+
+/* Маленькие иконки (для карточек покемонов в коллекции) */
+.type-icon-sm {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+}
+
+.type-icon-sm img {
+    width: 50% !important;
+    height: 50% !important;
+    max-width: 50% !important;
+    max-height: 50% !important;
+}
+
+/* Средние иконки (стандартные) */
+.type-icon-md {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+}
+
+.type-icon-md img {
+    width: 55% !important;
+    height: 55% !important;
+    max-width: 55% !important;
+    max-height: 55% !important;
+}
+
+/* Большие иконки (для врагов) */
+.type-icon-lg {
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px !important;
+    min-height: 56px !important;
+}
+
+.type-icon-lg img {
+    width: 60% !important;
+    height: 60% !important;
+    max-width: 60% !important;
+    max-height: 60% !important;
+}
+
+/* Очень маленькие (для команды) */
+.type-icon-xs {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+}
+
+.type-icon-xs img {
+    width: 45% !important;
+    height: 45% !important;
+    max-width: 45% !important;
+    max-height: 45% !important;
+}
+
+/* ============================================
+   ЦВЕТА ТИПОВ
+   ============================================ */
+.type-icon.bug {
+    background: #92BC2C !important;
+    box-shadow: 0 0 12px rgba(146, 188, 44, 0.4) !important;
+}
+
+.type-icon.dark {
+    background: #595761 !important;
+    box-shadow: 0 0 12px rgba(89, 87, 97, 0.4) !important;
+}
+
+.type-icon.dragon {
+    background: #0C69C8 !important;
+    box-shadow: 0 0 12px rgba(12, 105, 200, 0.4) !important;
+}
+
+.type-icon.electric {
+    background: #F2D94E !important;
+    box-shadow: 0 0 12px rgba(242, 217, 78, 0.4) !important;
+}
+
+.type-icon.fire {
+    background: #FBA54C !important;
+    box-shadow: 0 0 12px rgba(251, 165, 76, 0.4) !important;
+}
+
+.type-icon.fairy {
+    background: #EE90E6 !important;
+    box-shadow: 0 0 12px rgba(238, 144, 230, 0.4) !important;
+}
+
+.type-icon.fighting {
+    background: #D3425F !important;
+    box-shadow: 0 0 12px rgba(211, 66, 95, 0.4) !important;
+}
+
+.type-icon.flying {
+    background: #A1BBEC !important;
+    box-shadow: 0 0 12px rgba(161, 187, 236, 0.4) !important;
+}
+
+.type-icon.ghost {
+    background: #5F6DBC !important;
+    box-shadow: 0 0 12px rgba(95, 109, 188, 0.4) !important;
+}
+
+.type-icon.grass {
+    background: #5FBD58 !important;
+    box-shadow: 0 0 12px rgba(95, 189, 88, 0.4) !important;
+}
+
+.type-icon.ground {
+    background: #DA7C4D !important;
+    box-shadow: 0 0 12px rgba(218, 124, 77, 0.4) !important;
+}
+
+.type-icon.ice {
+    background: #75D0C1 !important;
+    box-shadow: 0 0 12px rgba(117, 208, 193, 0.4) !important;
+}
+
+.type-icon.normal {
+    background: #A0A29F !important;
+    box-shadow: 0 0 12px rgba(160, 162, 159, 0.4) !important;
+}
+
+.type-icon.poison {
+    background: #B763CF !important;
+    box-shadow: 0 0 12px rgba(183, 99, 207, 0.4) !important;
+}
+
+.type-icon.psychic {
+    background: #FA8581 !important;
+    box-shadow: 0 0 12px rgba(250, 133, 129, 0.4) !important;
+}
+
+.type-icon.rock {
+    background: #C9BB8A !important;
+    box-shadow: 0 0 12px rgba(201, 187, 138, 0.4) !important;
+}
+
+.type-icon.steel {
+    background: #5695A3 !important;
+    box-shadow: 0 0 12px rgba(86, 149, 163, 0.4) !important;
+}
+
+.type-icon.water {
+    background: #539DDF !important;
+    box-shadow: 0 0 12px rgba(83, 157, 223, 0.4) !important;
+}
+
+/* ============================================
+   КОНТЕКСТЫ
+   ============================================ */
+
+/* Иконки типов в карточке врага */
+.enemy-type-icons {
+    display: flex !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Иконки типов в карточке покемона (коллекция) */
+.pokemon-type-icons {
+    display: flex !important;
+    gap: 6px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 8px 0 !important;
+    min-height: 32px !important;
+}
+
+.pokemon-type-icons .type-icon {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+}
+
+.pokemon-type-icons .type-icon img {
+    width: 50% !important;
+    height: 50% !important;
+    max-width: 50% !important;
+    max-height: 50% !important;
+}
+
+/* Иконки типов в команде */
+.team-pokemon-types {
+    display: flex !important;
+    gap: 4px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 4px !important;
+}
+
+.team-pokemon-types .type-icon {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+}
+
+.team-pokemon-types .type-icon img {
+    width: 45% !important;
+    height: 45% !important;
+    max-width: 45% !important;
+    max-height: 45% !important;
+}
+
+/* ============================================
+   АДАПТИВНОСТЬ
+   ============================================ */
+@media (max-width: 768px) {
+    .type-icon-md {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+    }
+    
+    .type-icon-lg {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+    }
+    
+    .enemy-type-icons .type-icon {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+    }
+    
+    .pokemon-type-icons .type-icon {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .type-icon-md {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+    }
+    
+    .type-icon-lg {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+    }
+    
+    .enemy-type-icons .type-icon {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+    }
+    
+    .pokemon-type-icons .type-icon {
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px !important;
+        min-height: 24px !important;
+    }
+    
+    .team-pokemon-types .type-icon {
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px !important;
+        min-height: 18px !important;
+    }
+}

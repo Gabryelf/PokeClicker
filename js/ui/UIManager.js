@@ -1,5 +1,5 @@
 /**
- * Менеджер пользовательского интерфейса - исправленная версия
+ * Менеджер пользовательского интерфейса
  * @module UIManager
  */
 
@@ -161,7 +161,7 @@
             if (step && step.action === 'click-pokeball') {
                 // Разрешаем клик
             } else {
-                this.game.showNotification('🎓 Следуй указаниям туториала!', 'info');
+                this.game.showNotification('Следуй указаниям туториала!', 'info');
                 return;
             }
         }
@@ -636,44 +636,58 @@
     }
     
     async createPokemonCard(pokemon) {
-        var card = document.createElement('div');
+        const card = document.createElement('div');
         card.className = 'pokemon-card';
         card.dataset.id = pokemon.id;
         card.dataset.pokemonId = pokemon.id;
-        var rarity = CONFIG.RARITIES[pokemon.rarity];
-        var energyPercent = (pokemon.energy / pokemon.maxEnergy) * 100;
         
-        var img = document.createElement('img');
-        img.className = 'pokemon-image';
-        img.alt = pokemon.name;
+        const rarity = CONFIG.RARITIES[pokemon.rarity];
+        const energyPercent = (pokemon.energy / pokemon.maxEnergy) * 100;
+        
+        // Загружаем изображение покемона
+        let pokemonImgSrc = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
         try {
-            var pokemonImg = await this.imageManager.getPokemonImage(pokemon.id);
-            img.src = pokemonImg.src;
+            const pokemonImg = await this.imageManager.getPokemonImage(pokemon.id);
+            pokemonImgSrc = pokemonImg.src;
         } catch (e) {
-            img.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
+            // используем запасной вариант
         }
         
-        var isInTeam = false;
-        for (var i = 0; i < this.game.pokemonManager.team.length; i++) {
-            if (this.game.pokemonManager.team[i].id === pokemon.id) {
-                isInTeam = true;
-                break;
+        // Проверяем, в команде ли покемон
+        const isInTeam = this.game.pokemonManager.team.some(p => p.id === pokemon.id);
+        
+        // Создаем иконки типов
+        let typesHTML = '';
+        if (pokemon.types && pokemon.types.length > 0) {
+            // Используем готовый HTML с иконками
+            typesHTML = `<div class="pokemon-type-icons">`;
+            for (const type of pokemon.types) {
+                const normalizedType = type.toLowerCase();
+                typesHTML += `
+                    <div class="type-icon ${normalizedType} type-icon-sm" title="${type}">
+                        <img src="" alt="${type}" style="display: none;">
+                        <span style="color: #fff; font-weight: bold; font-size: 0.6rem;">${type.charAt(0).toUpperCase()}</span>
+                    </div>
+                `;
             }
+            typesHTML += `</div>`;
         }
         
+        // После создания HTML, загружаем реальные иконки
         card.innerHTML = `
             <div class="pokemon-image-container">
-                <img src="${img.src}" alt="${pokemon.name}" class="pokemon-image" width="100" height="100">
+                <img src="${pokemonImgSrc}" alt="${pokemon.name}" class="pokemon-image" width="100" height="100">
             </div>
             <h4>${pokemon.name}</h4>
             <div class="pokemon-rarity" style="color: ${rarity.color}; border-color: ${rarity.color}">${rarity.name}</div>
+            ${typesHTML}
             <div class="pokemon-stats">
                 <div>Уровень: ${pokemon.level}</div>
                 <div>Урон: ${Math.floor(pokemon.currentDamage)}</div>
                 <div>Энергия: ${Math.floor(energyPercent)}%</div>
                 <div>Слияний: ${pokemon.mergeCount || 0}</div>
             </div>
-            ${isInTeam ? '<div class="in-team">В команде</div>' : ''}
+            ${isInTeam ? '<div class="in-team"> </div>' : ''}
             <div class="pokemon-actions">
                 ${!isInTeam && pokemon.energy > 0 && this.game.pokemonManager.team.length < this.game.pokemonManager.maxTeamSize ? 
                     `<button class="add-to-team-btn" data-pokemon-id="${pokemon.id}">➕ В команду</button>` : 
@@ -681,7 +695,38 @@
             </div>
         `;
         
+        // Асинхронно загружаем реальные иконки
+        this.loadTypeIconsForCard(card, pokemon.types);
+        
         return card;
+    }
+    
+    /**
+     * Загружает реальные иконки типов для карточки
+     */
+    async loadTypeIconsForCard(card, types) {
+        if (!types || types.length === 0) return;
+        
+        const iconContainers = card.querySelectorAll('.pokemon-type-icons .type-icon');
+        if (iconContainers.length === 0) return;
+        
+        for (let i = 0; i < Math.min(iconContainers.length, types.length); i++) {
+            const container = iconContainers[i];
+            const type = types[i];
+            try {
+                const icon = await this.imageManager.getTypeIcon(type);
+                const img = container.querySelector('img');
+                if (img) {
+                    img.src = icon.src;
+                    img.style.display = 'block';
+                    const span = container.querySelector('span');
+                    if (span) span.style.display = 'none';
+                }
+            } catch (e) {
+                // Оставляем текстовый заменитель
+                console.warn(`Не удалось загрузить иконку ${type}`);
+            }
+        }
     }
     
     addCollectionButtonHandlers() {
