@@ -102,6 +102,16 @@ class ImageManager {
         this.isReady = false;
     }
 
+    // МЕТОД ДЛЯ UI ИКОНОК
+    getUIIcon(iconKey) {
+        const url = this.config.UI_ICONS[iconKey];
+        if (!url) {
+            console.warn(`⚠️ UI иконка не найдена: ${iconKey}`);
+            return Promise.resolve(this.cache.createFallbackImage('ui_' + iconKey));
+        }
+        return this.cache.loadImage(url, 'ui_' + iconKey);
+    }
+
     getPokemonImage(pokemonId) {
         const url = this.config.POKEMON_IMAGES[pokemonId];
         if (!url) {
@@ -158,6 +168,11 @@ class ImageManager {
         for (const [key] of Object.entries(this.config.ENEMY_IMAGES)) {
             promises.push(this.getEnemyImage(key).catch(() => {}));
         }
+
+        // Загружаем UI иконки
+        for (const [key] of Object.entries(this.config.UI_ICONS)) {
+            promises.push(this.getUIIcon(key).catch(() => {}));
+        }
         
         await Promise.all(promises);
         this.isReady = true;
@@ -173,6 +188,11 @@ class ImageManager {
 
     getCachedTypeIcon(type) {
         return this.cache.getCached('type_' + type.toUpperCase());
+    }
+
+    // Получить кэшированную UI иконку
+    getCachedUIIcon(iconKey) {
+        return this.cache.getCached('ui_' + iconKey);
     }
 }
 

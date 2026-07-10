@@ -141,6 +141,45 @@
         ROCK: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/rock.svg',
         STEEL: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/steel.svg',
         WATER: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/type-icons/water.svg'
+    },
+
+    // НАСТРОЙКИ UI ИКОНОК
+    UI_ICONS: {
+        // Основные кнопки навигации
+        COLLECTION: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/pokedex.png',     // 📖 Коллекция
+        SHOP: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/shop_bag.png',           // 🏪 Магазин
+        MAP: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/location.png',             // 🗺️ Карта
+        HERO: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/trainer.png',        // 🎮 Герои
+        
+        // Статистика
+        COINS: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/cash_0.png',          // 💰 Монеты
+        STAR: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/star_ball.png',           // ⭐ Уровень
+        XP: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/crown.png',               // 🌟 Опыт
+        
+        // Боевые
+        SWORD: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/fight.png',         // ⚔️ Атака
+        SHIELD: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/paralize.png',       // 🛡️ Защита
+        ENERGY: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/poison.png',       // ⚡ Энергия
+        HEALTH: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/potion.png',       // ❤️ Здоровье
+        
+        // Системные
+        CLOSE: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/icons/svg/undo.svg',         // ✖️ Закрыть
+        ADD: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/icons/svg/plus.svg',             // ➕ Добавить
+        REMOVE: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/icons/svg/delete_database.svg',       // ➖ Удалить
+        CHECK: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/icons/svg/ok.svg',         // ✅ Готово
+        
+        // Модальные окна
+        SETTINGS: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/icons/svg/settings.png',   // ⚙️ Настройки
+        TEAM: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/trainer.png',           // 👥 Команда
+        GYM: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/articuro.png',             // 🏋️ Арена
+        CENTER: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/pokecenter.png',       // 🏥 Покемон-центр
+        
+        // Дополнительные
+        TROPHY: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/crown.png',       // 🏆 Трофей
+        QUEST: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/poke_zapdos.png',         // 📜 Квест
+        LOCATION: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/docs/images/pokemon/button-icons/compas.png',   // 📍 Локация
+        LOCK: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/icons/svg/lock.svg',           // 🔒 Заблокировано
+        UNLOCK: 'https://github.com/Gabryelf/Atlas-Assets/raw/main/icons/svg/unlock.svg'        // 🔓 Открыто
     }
 
 };

@@ -105,6 +105,9 @@
             // 14. Обновляем изображения покеболов
             await updatePokeballImages(this.imageManager);
             
+            // 14.5. Заменяем Font Awesome на UI иконки
+            await this.replaceAllUIIcons();
+            
             // 15. Обновляем хедер
             this.updateHeaderUI();
             
@@ -526,6 +529,124 @@
         }
         
         this.saveGame();
+    }
+
+    // 🆕 Метод для замены всех иконок
+    async replaceAllUIIcons() {
+        try {
+            // Заменяем иконки во всех модальных окнах
+            const modalIds = ['collection-modal', 'shop-modal', 'team-modal', 'hero-modal', 
+                            'hero-upgrade-modal', 'pokemon-center-modal', 'gym-modal'];
+            
+            for (const id of modalIds) {
+                const modal = document.getElementById(id);
+                if (modal) {
+                    await UIIconHelper.replaceFaIcons(modal, this.imageManager);
+                }
+            }
+            
+            // Заменяем иконки в хедере
+            const header = document.querySelector('header');
+            if (header) {
+                await UIIconHelper.replaceFaIcons(header, this.imageManager);
+            }
+            
+            // Заменяем иконки в основном контенте
+            const main = document.querySelector('main');
+            if (main) {
+                await UIIconHelper.replaceFaIcons(main, this.imageManager);
+            }
+            
+            // Обновляем все UI иконки
+            await UIIconHelper.refreshAllUIcons(this.imageManager);
+            
+            // Добавляем стили для UI иконок
+            this.addUIIconStyles();
+            
+            console.log('✅ UI иконки успешно заменены');
+        } catch (e) {
+            console.warn('⚠️ Ошибка при замене UI иконок:', e);
+        }
+    }
+    
+    // Добавляем стили для UI иконок
+    addUIIconStyles() {
+        if (document.getElementById('ui-icon-styles')) return;
+        
+        const style = document.createElement('style');
+        style.id = 'ui-icon-styles';
+        style.textContent = `
+            /* UI Иконки */
+            .ui-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                vertical-align: middle;
+                flex-shrink: 0;
+                line-height: 1;
+            }
+            
+            .ui-icon img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: block;
+            }
+            
+            .ui-icon-xs { width: 12px; height: 12px; }
+            .ui-icon-sm { width: 16px; height: 16px; }
+            .ui-icon-md { width: 20px; height: 20px; }
+            .ui-icon-lg { width: 28px; height: 28px; }
+            .ui-icon-xl { width: 36px; height: 36px; }
+            
+            /* Стили для кнопок с иконками */
+            .nav-btn .ui-icon {
+                width: 24px;
+                height: 24px;
+                transition: transform 0.2s ease;
+            }
+            
+            .nav-btn:hover .ui-icon {
+                transform: scale(1.15);
+            }
+            
+            /* Модальные окна */
+            .modal-header .ui-icon {
+                width: 28px;
+                height: 28px;
+                margin-right: 8px;
+            }
+            
+            /* Статистика */
+            .stats-bar .ui-icon,
+            .money-display .ui-icon,
+            .level-display .ui-icon {
+                width: 18px;
+                height: 18px;
+                margin-right: 4px;
+            }
+            
+            /* Кнопки действий */
+            .add-to-team-btn .ui-icon,
+            .buy-btn .ui-icon,
+            .claim-reward-btn .ui-icon {
+                width: 16px;
+                height: 16px;
+                margin-right: 4px;
+            }
+            
+            /* Закрытие модальных окон */
+            .close .ui-icon {
+                width: 24px;
+                height: 24px;
+                transition: transform 0.2s ease;
+            }
+            
+            .close:hover .ui-icon {
+                transform: rotate(90deg);
+            }
+        `;
+        document.head.appendChild(style);
     }
 }
 

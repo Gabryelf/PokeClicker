@@ -315,6 +315,9 @@
             var bonus = this.game.heroSystem.getHeroBonus();
             heroBonusEl.textContent = '+' + bonus + '%';
         }
+
+        // Обновляем UI иконки
+        await UIIconHelper.refreshAllUIcons(this.imageManager);
         
         this.setupPokeballClickHandlers();
         this.setupTeamSlotClickHandlers();
@@ -635,14 +638,23 @@
         this.addCollectionButtonHandlers();
     }
     
+    /**
+     * Создает карточку покемона для отображения в коллекции
+     * @param {Object} pokemon - Данные покемона
+     * @returns {Promise<HTMLElement>} - Элемент карточки
+     */
     async createPokemonCard(pokemon) {
         const card = document.createElement('div');
         card.className = 'pokemon-card';
         card.dataset.id = pokemon.id;
         card.dataset.pokemonId = pokemon.id;
         
+        // Получаем данные редкости
         const rarity = CONFIG.RARITIES[pokemon.rarity];
         const energyPercent = (pokemon.energy / pokemon.maxEnergy) * 100;
+        
+        // Проверяем, в команде ли покемон
+        const isInTeam = this.game.pokemonManager.team.some(p => p.id === pokemon.id);
         
         // Загружаем изображение покемона
         let pokemonImgSrc = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png';
@@ -650,22 +662,19 @@
             const pokemonImg = await this.imageManager.getPokemonImage(pokemon.id);
             pokemonImgSrc = pokemonImg.src;
         } catch (e) {
-            // используем запасной вариант
+            // Используем запасной вариант
+            console.warn(`⚠️ Не удалось загрузить изображение покемона ${pokemon.name}:`, e);
         }
         
-        // Проверяем, в команде ли покемон
-        const isInTeam = this.game.pokemonManager.team.some(p => p.id === pokemon.id);
-        
-        // Создаем иконки типов
+        // Создаем HTML для иконок типов (будет загружено асинхронно)
         let typesHTML = '';
         if (pokemon.types && pokemon.types.length > 0) {
-            // Используем готовый HTML с иконками
             typesHTML = `<div class="pokemon-type-icons">`;
             for (const type of pokemon.types) {
                 const normalizedType = type.toLowerCase();
                 typesHTML += `
-                    <div class="type-icon ${normalizedType} type-icon-sm" title="${type}">
-                        <img src="" alt="${type}" style="display: none;">
+                    <div class="type-icon ${normalizedType} type-icon-sm" title="${type}" data-type="${normalizedType}">
+                        <img src="" alt="${type}" data-type="${normalizedType}" style="display: none;">
                         <span style="color: #fff; font-weight: bold; font-size: 0.6rem;">${type.charAt(0).toUpperCase()}</span>
                     </div>
                 `;
@@ -673,36 +682,79 @@
             typesHTML += `</div>`;
         }
         
-        // После создания HTML, загружаем реальные иконки
+        // Создаем UI иконки
+        const addIconHTML = UIIconHelper.createIconHTML('ADD', 'sm');
+        const teamIconHTML = UIIconHelper.createIconHTML('TEAM', 'sm');
+        const coinsIconHTML = UIIconHelper.createIconHTML('COINS', 'xs');
+        const starIconHTML = UIIconHelper.createIconHTML('STAR', 'xs');
+        const energyIconHTML = UIIconHelper.createIconHTML('ENERGY', 'xs');
+        
+        // Формируем HTML карточки
         card.innerHTML = `
             <div class="pokemon-image-container">
-                <img src="${pokemonImgSrc}" alt="${pokemon.name}" class="pokemon-image" width="100" height="100">
+                <img src="${pokemonImgSrc}" alt="${pokemon.name}" class="pokemon-image" width="100" height="100" loading="lazy">
             </div>
-            <h4>${pokemon.name}</h4>
-            <div class="pokemon-rarity" style="color: ${rarity.color}; border-color: ${rarity.color}">${rarity.name}</div>
+            <h4 class="pokemon-name">${pokemon.name}</h4>
+            <div class="pokemon-rarity" style="color: ${rarity.color}; border-color: ${rarity.color}">
+                ${rarity.name}
+            </div>
             ${typesHTML}
             <div class="pokemon-stats">
-                <div>Уровень: ${pokemon.level}</div>
-                <div>Урон: ${Math.floor(pokemon.currentDamage)}</div>
-                <div>Энергия: ${Math.floor(energyPercent)}%</div>
-                <div>Слияний: ${pokemon.mergeCount || 0}</div>
+                <div class="stat-item">
+                    ${starIconHTML}
+                    <span>Уровень: ${pokemon.level}</span>
+                </div>
+                <div class="stat-item">
+                    ${coinsIconHTML}
+                    <span>Урон: ${Math.floor(pokemon.currentDamage)}</span>
+                </div>
+                <div class="stat-item">
+                    ${energyIconHTML}
+                    <span>Энергия: ${Math.floor(energyPercent)}%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="merge-icon">🔄</span>
+                    <span>Слияний: ${pokemon.mergeCount || 0}</span>
+                </div>
             </div>
-            ${isInTeam ? '<div class="in-team"> </div>' : ''}
+            ${isInTeam ? `<div class="in-team-badge">${teamIconHTML} В команде</div>` : ''}
             <div class="pokemon-actions">
                 ${!isInTeam && pokemon.energy > 0 && this.game.pokemonManager.team.length < this.game.pokemonManager.maxTeamSize ? 
-                    `<button class="add-to-team-btn" data-pokemon-id="${pokemon.id}">➕ В команду</button>` : 
-                    (!isInTeam && pokemon.energy <= 0 ? '<div class="no-energy">Нет энергии</div>' : '')}
+                    `<button class="add-to-team-btn" data-pokemon-id="${pokemon.id}">${addIconHTML} В команду</button>` : 
+                    (!isInTeam && pokemon.energy <= 0 ? 
+                        '<div class="no-energy">${energyIconHTML} Нет энергии</div>' : 
+                        '')}
             </div>
         `;
         
-        // Асинхронно загружаем реальные иконки
-        this.loadTypeIconsForCard(card, pokemon.types);
+        // Асинхронно загружаем иконки типов
+        await this.loadTypeIconsForCard(card, pokemon.types);
+        
+        // Асинхронно загружаем UI иконки
+        await UIIconHelper.refreshAllUIcons(this.imageManager);
+        
+        // Добавляем обработчик для кнопки "В команду"
+        const addBtn = card.querySelector('.add-to-team-btn');
+        if (addBtn) {
+            addBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const pokemonId = parseInt(addBtn.dataset.pokemonId);
+                const result = this.game.addToTeam(pokemonId);
+                if (result && result.success) {
+                    // Обновляем UI после добавления
+                    this.createCollectionUI();
+                    this.updateUI();
+                }
+            });
+        }
         
         return card;
     }
-    
+
     /**
      * Загружает реальные иконки типов для карточки
+     * @param {HTMLElement} card - Карточка покемона
+     * @param {string[]} types - Массив типов покемона
      */
     async loadTypeIconsForCard(card, types) {
         if (!types || types.length === 0) return;
@@ -723,8 +775,8 @@
                     if (span) span.style.display = 'none';
                 }
             } catch (e) {
+                console.warn(`⚠️ Не удалось загрузить иконку типа ${type}:`, e);
                 // Оставляем текстовый заменитель
-                console.warn(`Не удалось загрузить иконку ${type}`);
             }
         }
     }

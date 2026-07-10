@@ -164,3 +164,83 @@
          gap: 8px;
      }
  }
+
+ /* ========== UI ИКОНКИ ========== */
+.ui-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.ui-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.ui-icon-xs { width: 12px; height: 12px; }
+.ui-icon-sm { width: 16px; height: 16px; }
+.ui-icon-md { width: 20px; height: 20px; }
+.ui-icon-lg { width: 28px; height: 28px; }
+.ui-icon-xl { width: 36px; height: 36px; }
+
+/* Кнопки с иконками */
+.nav-btn .ui-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.modal-header .ui-icon {
+    width: 28px;
+    height: 28px;
+    margin-right: 8px;
+}
+
+.stats-bar .ui-icon,
+.money-display .ui-icon,
+.level-display .ui-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+}
+
+/* Боевые иконки */
+.battle-icon .ui-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Кнопки */
+.add-to-team-btn .ui-icon,
+.buy-btn .ui-icon,
+.claim-reward-btn .ui-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+}
+
+/* Закрытие */
+.close .ui-icon {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+}
+
+.close:hover .ui-icon {
+    transform: rotate(90deg);
+}
+
+/* Состояния */
+.ui-icon.pulse {
+    animation: uiIconPulse 1s ease-in-out infinite;
+}
+
+@keyframes uiIconPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
